@@ -7,6 +7,7 @@ import { useApp } from "./AppProvider";
 import { BottomNav, TopBar } from "./Chrome";
 import { ExerciseCard } from "./ExerciseCard";
 import { MascotSays } from "./Mascot";
+import { Skola2030Box } from "./Skola2030Box";
 import { Widget } from "./widgets";
 
 export function TopicView({ grade, topicId }: { grade: number; topicId: string }) {
@@ -31,6 +32,8 @@ export function TopicView({ grade, topicId }: { grade: number; topicId: string }
             <h1>{t(topic.title)}</h1>
           </div>
         </section>
+
+        <Skola2030Box grade={grade} codes={topic.skola2030} />
 
         <section className="block">
           <h2>{t(UI.why)}</h2>
@@ -57,7 +60,7 @@ export function TopicView({ grade, topicId }: { grade: number; topicId: string }
           <section className="block">
             <h2>{t(UI.tryIt)}</h2>
             <div className="widget-card">
-              <Widget id={topic.widget} color={g.color} />
+              <Widget id={topic.widget} color={g.color} grade={grade} />
             </div>
           </section>
         )}

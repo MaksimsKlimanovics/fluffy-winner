@@ -61,9 +61,12 @@ export function NumberLine({ color }: WidgetProps) {
 
 const COINS = [1, 2, 5, 10, 20, 50, 100, 200];
 
-export function Coins({ color }: WidgetProps) {
+export function Coins({ color, grade }: WidgetProps) {
   const { t } = useApp();
-  const [target, setTarget] = useState(45);
+  // Grade 1 counts within 20 (Skola2030 3.2.2), so only the small coins.
+  const small = grade <= 1;
+  const coins = small ? COINS.slice(0, 4) : COINS;
+  const [target, setTarget] = useState(small ? 17 : 45);
   const [purse, setPurse] = useState<number[]>([]);
   const sum = purse.reduce((s, c) => s + c, 0);
   const label = (c: number) => (c >= 100 ? `${c / 100}€` : `${c}c`);
@@ -71,11 +74,11 @@ export function Coins({ color }: WidgetProps) {
   return (
     <div className="widget">
       <p className="widget-task">
-        🍦 {t({ lv: "Saldējums maksā", ru: "Мороженое стоит" })} <b>{fmt(target / 100)} €</b>.{" "}
+        🍦 {t({ lv: "Saldējums maksā", ru: "Мороженое стоит" })} <b>{small ? `${target} c` : `${fmt(target / 100)} €`}</b>.{" "}
         {t({ lv: "Saliec tieši tik daudz!", ru: "Собери ровно столько!" })}
       </p>
       <div className="coin-row">
-        {COINS.map((c) => (
+        {coins.map((c) => (
           <button key={c} className={`coin ${c >= 100 ? "euro" : c >= 10 ? "gold" : "copper"}`} onClick={() => setPurse((p) => [...p, c])}>
             {label(c)}
           </button>
@@ -107,7 +110,7 @@ export function Coins({ color }: WidgetProps) {
         <button
           className="btn ghost"
           onClick={() => {
-            setTarget(35 + Math.floor(Math.random() * 30) * 5);
+            setTarget(small ? 5 + Math.floor(Math.random() * 16) : 35 + Math.floor(Math.random() * 30) * 5);
             setPurse([]);
           }}
         >

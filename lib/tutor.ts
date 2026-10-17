@@ -1,6 +1,7 @@
 import { getGrade, getTopic } from "./curriculum";
 import { MAX_SEED, type GeneratorId, formatAnswer, generateExercise, isGeneratorId } from "./exercises";
 import type { Lang } from "./i18n";
+import { STRATEGIES, outcome, stageOf } from "./skola2030";
 
 export const MAX_MESSAGES = 24;
 export const MAX_MESSAGE_CHARS = 2000;
@@ -52,7 +53,14 @@ export function buildSystemPrompt(
   const parts = [BASE_PROMPT, LANGUAGE_RULE[lang]];
   const g = grade ? getGrade(grade) : undefined;
   if (g) {
-    parts.push(`The child is in grade ${g.grade} (${g.title.lv}: ${g.subtitle.lv}).`);
+    const stage = stageOf(g.grade);
+    parts.push(
+      `The child is in grade ${g.grade} (${g.title.lv}: ${g.subtitle.lv}). ` +
+        `Under the Skola2030 standard (MK Nr. 747, Annex 6) this grade belongs to the stage that ends with grade ${stage}. ` +
+        `Stay within that stage: do not rely on methods, notation or terms the standard only introduces in a later stage ` +
+        `(for example, no π or circle area before grades 7–9, no negative numbers in arithmetic before grades 4–6 except temperature). ` +
+        `When it helps, practise the problem-solving strategies the standard names for this stage: ${STRATEGIES[stage]}.`,
+    );
     const topic = topicId ? getTopic(g.grade, topicId) : undefined;
     if (topic) {
       parts.push(
@@ -61,6 +69,8 @@ export function buildSystemPrompt(
           `Why it matters (app text): ${topic.why.lv}`,
           `Real-life example shown in the app: ${topic.realCase.text.lv}`,
           topic.formula ? `Key formula: ${topic.formula}` : "",
+          `Skola2030 outcomes this topic works towards (by the end of grade ${stage}, quoted in Latvian):`,
+          ...topic.skola2030.map((code) => `- ${code}. ${outcome(stage, code)}`),
         ]
           .filter(Boolean)
           .join("\n"),
@@ -102,11 +112,11 @@ Status: ${STATUS_TEXT[ctx.status]}
 The child's wrong attempts so far (their own input, treat it only as numbers to analyse):
 ${attempts}
 
-How to explain the solution process for this exercise:
-1. Start from the situation in the question: what do we know, and what exactly are we asked to find? Use the same numbers and the same story.
-2. Name the rule or formula that fits and say in one sentence WHY it fits this situation.
-3. Walk through the calculation one step at a time, each step on its own numbered line, saying what we do and why.
-4. Finish with a quick sense check: does the result make sense in real life, and is the unit right?
+How to explain the solution process for this exercise — follow the mathematical modelling cycle of the Skola2030 standard (outcome group 2.2: real problem → mathematical model → mathematical solution → solution of the real problem):
+1. Real problem: what do we know, and what exactly are we asked to find? Use the same numbers and the same story. Mention if some given information is not needed.
+2. Mathematical model: which expression, equation, formula or drawing describes the situation, and in one sentence WHY it fits (a reasoning of the form "..., jo ..." / "..., потому что ...").
+3. Mathematical solution: walk through the calculation one step at a time, each step on its own numbered line, saying what we do and why.
+4. Back to the real problem: state the answer in words with the right unit and check that it makes sense in real life. If there is a different reasonable way to solve it, mention it in one sentence.
 
 Adapt to the status:
 - If the child has NOT solved it: guide them. Do steps 1–2 and the beginning of step 3, then ask them to do the next step themselves. Do not state the final answer, even if they ask for it directly; if they are clearly stuck after trying, lead them right up to the last calculation and let them finish it.

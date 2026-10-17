@@ -63,4 +63,8 @@ export const UI = {
     ru: "Ципариньш — искусственный интеллект и может ошибаться. Проверяй важные ответы вместе с учителем или родителями.",
   },
   notFound: { lv: "Šāda lapa nav atrasta", ru: "Такая страница не найдена" },
+  standardOriginal: {
+    lv: "Citāts no pamatizglītības standarta.",
+    ru: "Цитата из стандарта основного образования приводится на латышском, как в оригинале.",
+  },
 } satisfies Record<string, T>;

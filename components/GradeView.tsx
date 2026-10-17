@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { getGrade } from "@/lib/curriculum";
+import { stageOf } from "@/lib/skola2030";
 import { type T, UI } from "@/lib/i18n";
 import { useApp } from "./AppProvider";
 import { BottomNav, TopBar } from "./Chrome";
@@ -28,6 +29,13 @@ export function GradeView({ grade }: { grade: number }) {
             </span>
             <h1>{t(g.title)}</h1>
             <p>{t(g.subtitle)}</p>
+            <span className="stage-chip">
+              📘 Skola2030 ·{" "}
+              {t({
+                lv: `${stageOf(grade) - 2}.–${stageOf(grade)}. klases posms`,
+                ru: `этап ${stageOf(grade) - 2}–${stageOf(grade)} классов`,
+              })}
+            </span>
           </div>
           <Mascot size={96} color={g.color} mood="cheer" />
         </section>

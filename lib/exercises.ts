@@ -116,8 +116,13 @@ export const generators = {
     };
   },
   coins: (): Exercise => {
-    const coins = [1, 2, 5, 10, 20, 50];
-    const picked = Array.from({ length: rnd(2, 4) }, () => pick(coins));
+    // Grade 1 works with numbers up to 20 (standard 3.2.2: "20 apjomā").
+    const picked: number[] = [];
+    while (picked.length < 4) {
+      const options = [1, 2, 5, 10].filter((c) => picked.reduce((s, x) => s + x, 0) + c <= 20);
+      if (!options.length || (picked.length >= 2 && random() < 0.4)) break;
+      picked.push(pick(options));
+    }
     const sum = picked.reduce((s, c) => s + c, 0);
     const list = picked.join(" + ");
     return {
@@ -825,6 +830,371 @@ export const generators = {
         lv: `V = ${a} · ${b} · ${fmt(h)} = ${fmt(v)} m³ = ${v * 1000} l`,
         ru: `V = ${a} · ${b} · ${fmt(h)} = ${fmt(v)} м³ = ${v * 1000} л`,
       },
+    };
+  },
+  // ---------- added for Skola2030 coverage ----------
+  sequence: (): Exercise => {
+    const up = random() < 0.6;
+    const step = pick([2, 3, 4, 5]);
+    const start = up ? rnd(0, 20 - 4 * step) : rnd(4 * step, 20);
+    const terms = Array.from({ length: 4 }, (_, i) => start + (up ? i : -i) * step);
+    const next = start + (up ? 4 : -4) * step;
+    return {
+      question: {
+        lv: `Kāpnēm uz pakāpieniem uzrakstīti skaitļi: ${terms.join(", ")}, … Kāds skaitlis būs uz nākamā pakāpiena?`,
+        ru: `На ступеньках лестницы написаны числа: ${terms.join(", ")}, … Какое число будет на следующей ступеньке?`,
+      },
+      ...num(next),
+      hint: {
+        lv: "Paskaties, par cik mainās katrs nākamais skaitlis. Vai tie aug vai samazinās?",
+        ru: "Посмотри, на сколько меняется каждое следующее число. Они растут или уменьшаются?",
+      },
+      solution: {
+        lv: `Katrs nākamais ir par ${step} ${up ? "lielāks" : "mazāks"}: ${terms[3]} ${up ? "+" : "−"} ${step} = ${next}`,
+        ru: `Каждое следующее на ${step} ${up ? "больше" : "меньше"}: ${terms[3]} ${up ? "+" : "−"} ${step} = ${next}`,
+      },
+    };
+  },
+  units: (): Exercise => {
+    const kind = pick(["length", "mass", "time", "money"] as const);
+    if (kind === "length") {
+      const m = rnd(1, 4);
+      const cm = rnd(5, 95);
+      return {
+        question: {
+          lv: `Lentes garums ir ${m} m ${cm} cm. Cik tas ir centimetros?`,
+          ru: `Длина ленты ${m} м ${cm} см. Сколько это сантиметров?`,
+        },
+        ...num(m * 100 + cm),
+        unit: U.cm,
+        hint: { lv: "1 m = 100 cm", ru: "1 м = 100 см" },
+        solution: {
+          lv: `${m} m = ${m * 100} cm; ${m * 100} + ${cm} = ${m * 100 + cm} cm`,
+          ru: `${m} м = ${m * 100} см; ${m * 100} + ${cm} = ${m * 100 + cm} см`,
+        },
+      };
+    }
+    if (kind === "mass") {
+      // Stays within 1000 (stage 1–3 works with numbers up to 1000).
+      const used = pick([150, 200, 250, 300, 350, 400, 450, 600, 750]);
+      return {
+        question: {
+          lv: `Paciņā bija 1 kg miltu. Pankūkām izlietoja ${used} g. Cik gramu miltu palika?`,
+          ru: `В пачке был 1 кг муки. На блины израсходовали ${used} г. Сколько граммов муки осталось?`,
+        },
+        ...num(1000 - used),
+        unit: { lv: "g", ru: "г" },
+        hint: { lv: "1 kg = 1000 g", ru: "1 кг = 1000 г" },
+        solution: {
+          lv: `1 kg = 1000 g; 1000 − ${used} = ${1000 - used} g`,
+          ru: `1 кг = 1000 г; 1000 − ${used} = ${1000 - used} г`,
+        },
+      };
+    }
+    if (kind === "time") {
+      const h = rnd(1, 3);
+      const min = pick([0, 10, 15, 20, 30, 45]);
+      return {
+        question: {
+          lv: `Ceļš ar vilcienu no Rīgas līdz Siguldai un atpakaļ ilga ${h} h ${min} min. Cik tas ir minūtēs?`,
+          ru: `Поездка на поезде из Риги в Сигулду и обратно заняла ${h} ч ${min} мин. Сколько это минут?`,
+        },
+        ...num(h * 60 + min),
+        unit: U.min,
+        hint: { lv: "1 h = 60 min", ru: "1 ч = 60 мин" },
+        solution: {
+          lv: `${h} h = ${h * 60} min; ${h * 60} + ${min} = ${h * 60 + min} min`,
+          ru: `${h} ч = ${h * 60} мин; ${h * 60} + ${min} = ${h * 60 + min} мин`,
+        },
+      };
+    }
+    const e = rnd(1, 9);
+    const c = rnd(5, 95);
+    return {
+      question: {
+        lv: `Grāmata maksā ${e} € ${c} c. Cik tas ir centos?`,
+        ru: `Книга стоит ${e} € ${c} ц. Сколько это центов?`,
+      },
+      ...num(e * 100 + c),
+      unit: { lv: "c", ru: "ц" },
+      hint: { lv: "1 € = 100 c", ru: "1 € = 100 ц" },
+      solution: {
+        lv: `${e} € = ${e * 100} c; ${e * 100} + ${c} = ${e * 100 + c} c`,
+        ru: `${e} € = ${e * 100} ц; ${e * 100} + ${c} = ${e * 100 + c} ц`,
+      },
+    };
+  },
+  chart: (): Exercise => {
+    const fruits = [
+      { lv: "āboli", ru: "яблоки" },
+      { lv: "bumbieri", ru: "груши" },
+      { lv: "zemenes", ru: "клубника" },
+      { lv: "banāni", ru: "бананы" },
+    ];
+    const votes = fruits.map(() => rnd(2, 12));
+    const i = rnd(0, 3);
+    let j = rnd(0, 3);
+    if (j === i) j = (i + 1) % 4;
+    const table = (lang: "lv" | "ru") => fruits.map((f, k) => `${f[lang]} — ${votes[k]}`).join("; ");
+    const total = random() < 0.5;
+    const answer = total ? votes.reduce((s, v) => s + v, 0) : Math.abs(votes[i] - votes[j]);
+    return {
+      question: total
+        ? {
+            lv: `Klasē aptaujāja: “Kurš ir tavs mīļākais auglis?” Rezultāti: ${table("lv")}. Cik skolēnu piedalījās aptaujā?`,
+            ru: `В классе провели опрос: «Какой твой любимый фрукт?» Результаты: ${table("ru")}. Сколько учеников участвовало в опросе?`,
+          }
+        : {
+            lv: `Klasē aptaujāja: “Kurš ir tavs mīļākais auglis?” Rezultāti: ${table("lv")}. Par cik balsīm ${fruits[i].lv} atšķiras no ${fruits[j].lv}?`,
+            ru: `В классе провели опрос: «Какой твой любимый фрукт?» Результаты: ${table("ru")}. На сколько голосов отличаются ${fruits[i].ru} и ${fruits[j].ru}?`,
+          },
+      ...num(answer),
+      hint: total
+        ? { lv: "Saskaiti visu stabiņu augstumus.", ru: "Сложи высоты всех столбиков." }
+        : { lv: "No lielākā skaita atņem mazāko.", ru: "Из большего числа вычти меньшее." },
+      solution: total
+        ? { lv: `${votes.join(" + ")} = ${answer}`, ru: `${votes.join(" + ")} = ${answer}` }
+        : {
+            lv: `${Math.max(votes[i], votes[j])} − ${Math.min(votes[i], votes[j])} = ${answer}`,
+            ru: `${Math.max(votes[i], votes[j])} − ${Math.min(votes[i], votes[j])} = ${answer}`,
+          },
+    };
+  },
+  speed: (): Exercise => {
+    const v = pick([4, 5, 12, 15, 40, 50, 60, 80, 90]);
+    const t = rnd(2, 5);
+    const s = v * t;
+    const who =
+      v <= 5
+        ? { lv: "Tūrists Gaujas takā iet", ru: "Турист на тропе вдоль Гауи идёт" }
+        : v <= 15
+          ? { lv: "Velosipēdists brauc", ru: "Велосипедист едет" }
+          : { lv: "Autobuss brauc", ru: "Автобус едет" };
+    const ask = pick(["s", "t", "v"] as const);
+    const q =
+      ask === "s"
+        ? { lv: `${who.lv} ar ātrumu ${v} km/h ${t} stundas. Cik kilometrus tas veic?`, ru: `${who.ru} со скоростью ${v} км/ч в течение ${t} часов. Сколько километров он проходит?` }
+        : ask === "t"
+          ? { lv: `${who.lv} ${s} km ar ātrumu ${v} km/h. Cik stundas ilgst ceļš?`, ru: `${who.ru} ${s} км со скоростью ${v} км/ч. Сколько часов длится путь?` }
+          : { lv: `${who.lv} ${s} km ${t} stundās. Kāds ir ātrums?`, ru: `${who.ru} ${s} км за ${t} часа(ов). Какова скорость?` };
+    const ans = ask === "s" ? s : ask === "t" ? t : v;
+    const formula = ask === "s" ? `s = v · t = ${v} · ${t} = ${s} km` : ask === "t" ? `t = s : v = ${s} : ${v} = ${t} h` : `v = s : t = ${s} : ${t} = ${v} km/h`;
+    return {
+      question: q,
+      ...num(ans),
+      unit: ask === "s" ? U.km : ask === "t" ? { lv: "h", ru: "ч" } : { lv: "km/h", ru: "км/ч" },
+      hint: {
+        lv: "Ceļš = ātrums · laiks. Ja zināmi divi lielumi, trešo var aprēķināt.",
+        ru: "Путь = скорость · время. Если известны две величины, третью можно найти.",
+      },
+      solution: { lv: formula, ru: formula.replace("km/h", "км/ч").replace(" km", " км").replace(" h", " ч") },
+    };
+  },
+  primes: (): Exercise => {
+    const PRIMES = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97];
+    const COMPOSITE_TRAPS = [9, 15, 21, 27, 33, 39, 49, 51, 57, 63, 69, 77, 81, 87, 91, 93];
+    const p = pick(PRIMES.filter((x) => x > 10));
+    const wrong = shuffle([...COMPOSITE_TRAPS]).slice(0, 3);
+    const factor = (n: number) => {
+      for (let d = 2; d * d <= n; d++) if (n % d === 0) return `${n} = ${d} · ${n / d}`;
+      return String(n);
+    };
+    return {
+      question: {
+        lv: `Kastē ir konfektes, kuras gribam sadalīt vienādās rindās (vairāk nekā 1 rindā un katrā vairāk nekā 1 konfekte). Kuru konfekšu skaitu NEVAR tā sadalīt — kurš skaitlis ir pirmskaitlis?`,
+        ru: `Конфеты хотим разложить в одинаковые ряды (больше 1 ряда и больше 1 конфеты в ряду). Какое количество конфет так разложить НЕЛЬЗЯ — какое число простое?`,
+      },
+      ...choice(String(p), wrong.map(String)),
+      hint: {
+        lv: "Pirmskaitlis dalās tikai ar 1 un pats ar sevi. Pārbaudi dalīšanu ar 2, 3, 5, 7.",
+        ru: "Простое число делится только на 1 и на себя. Проверь деление на 2, 3, 5, 7.",
+      },
+      solution: {
+        lv: `${p} dalās tikai ar 1 un ${p}. Pārējie ir salikti: ${wrong.map(factor).join("; ")}`,
+        ru: `${p} делится только на 1 и на ${p}. Остальные составные: ${wrong.map(factor).join("; ")}`,
+      },
+    };
+  },
+  coords: (): Exercise => {
+    const x = rnd(-5, 5);
+    const y = rnd(-5, 5);
+    const dx = pick([-4, -3, -2, 2, 3, 4]);
+    const dy = pick([-3, -2, 2, 3]);
+    const p = (a: number, b: number) => `(${String(a).replace("-", "−")}; ${String(b).replace("-", "−")})`;
+    const dir = (d: number, pos: { lv: string; ru: string }, neg: { lv: string; ru: string }) => (d > 0 ? pos : neg);
+    const h = dir(dx, { lv: "pa labi", ru: "вправо" }, { lv: "pa kreisi", ru: "влево" });
+    const v = dir(dy, { lv: "uz augšu", ru: "вверх" }, { lv: "uz leju", ru: "вниз" });
+    const answer = p(x + dx, y + dy);
+    return {
+      question: {
+        lv: `Spēlē robots stāv punktā ${p(x, y)}. Tas pārvietojas ${Math.abs(dx)} rūtiņas ${h.lv} un ${Math.abs(dy)} rūtiņas ${v.lv}. Kurā punktā tas nonāk?`,
+        ru: `В игре робот стоит в точке ${p(x, y)}. Он сдвигается на ${Math.abs(dx)} клетки ${h.ru} и на ${Math.abs(dy)} клетки ${v.ru}. В какой точке он окажется?`,
+      },
+      ...choice(answer, [p(x + dy, y + dx), p(x - dx, y + dy), p(x + dx, y - dy), p(y + dy, x + dx)]),
+      hint: {
+        lv: "Pirmā koordināta (x) mainās, ejot pa labi/kreisi, otrā (y) — uz augšu/leju.",
+        ru: "Первая координата (x) меняется при движении вправо/влево, вторая (y) — вверх/вниз.",
+      },
+      solution: {
+        lv: `x: ${x} ${dx > 0 ? "+" : "−"} ${Math.abs(dx)} = ${x + dx}; y: ${y} ${dy > 0 ? "+" : "−"} ${Math.abs(dy)} = ${y + dy}`,
+        ru: `x: ${x} ${dx > 0 ? "+" : "−"} ${Math.abs(dx)} = ${x + dx}; y: ${y} ${dy > 0 ? "+" : "−"} ${Math.abs(dy)} = ${y + dy}`,
+      },
+    };
+  },
+  circleApprox: (): Exercise => {
+    const d = pick([0.8, 1, 1.2, 1.5, 2, 3]);
+    const c = d * 3;
+    return {
+      question: {
+        lv: `Apaļa galda diametrs ir ${fmt(d)} m. Apmēram cik metru lentes vajag, lai apliktu to apkārt malai? (Riņķa līnija ir aptuveni trīs diametri.)`,
+        ru: `Диаметр круглого стола ${fmt(d)} м. Примерно сколько метров ленты нужно, чтобы обклеить его край? (Окружность — это примерно три диаметра.)`,
+      },
+      // Accept the estimate 3·d and anything up to π·d: both show understanding.
+      ...num(round(d * 3.07, 2), round(d * 0.08, 2)),
+      unit: U.m,
+      hint: {
+        lv: "Uz riņķa līnijas var “uzlikt” nedaudz vairāk par 3 diametriem.",
+        ru: "На окружность можно «уложить» чуть больше 3 диаметров.",
+      },
+      solution: {
+        lv: `C ≈ 3 · ${fmt(d)} = ${fmt(c)} m (patiesībā nedaudz vairāk, ~${fmt(Math.PI * d)} m)`,
+        ru: `C ≈ 3 · ${fmt(d)} = ${fmt(c)} м (на самом деле чуть больше, ~${fmt(Math.PI * d)} м)`,
+      },
+    };
+  },
+  percentChange: (): Exercise => {
+    const price = pick([20, 40, 50, 80, 100, 120, 200]);
+    const p = pick([10, 20, 25, 50]);
+    const up = round(price * (1 + p / 100));
+    const back = round(up * (1 - p / 100));
+    return {
+      question: {
+        lv: `Velosipēda ķivere maksāja ${price} €. Pavasarī cenu palielināja par ${p}%, bet rudenī samazināja par ${p}%. Cik ķivere maksā rudenī? (Vai tā atgriezās pie ${price} €?)`,
+        ru: `Велосипедный шлем стоил ${price} €. Весной цену подняли на ${p}%, а осенью снизили на ${p}%. Сколько шлем стоит осенью? (Вернулась ли цена к ${price} €?)`,
+      },
+      ...num(back, 0.01),
+      unit: U.eur,
+      hint: {
+        lv: `Otrie ${p}% tiek rēķināti no jaunās cenas, nevis no ${price} €.`,
+        ru: `Вторые ${p}% считаются от новой цены, а не от ${price} €.`,
+      },
+      solution: {
+        lv: `${price} · ${fmt(1 + p / 100)} = ${fmt(up)} €; ${fmt(up)} · ${fmt(1 - p / 100)} = ${fmt(back)} € — lētāk nekā sākumā!`,
+        ru: `${price} · ${fmt(1 + p / 100)} = ${fmt(up)} €; ${fmt(up)} · ${fmt(1 - p / 100)} = ${fmt(back)} € — дешевле, чем сначала!`,
+      },
+    };
+  },
+  inequality: (): Exercise => {
+    const fee = pick([3, 4, 5, 6]);
+    const per = pick([2, 3, 4]);
+    const budget = fee + per * rnd(3, 8) + rnd(0, per - 1);
+    const max = Math.floor((budget - fee) / per);
+    return {
+      question: {
+        lv: `Mobilā plāna abonēšana maksā ${fee} € mēnesī plus ${per} € par katru papildu GB. Tavs budžets ir ${budget} €. Cik lielākais veselais GB skaits, ko vari nopirkt? (${fee} + ${per}x ≤ ${budget})`,
+        ru: `Мобильный тариф стоит ${fee} € в месяц плюс ${per} € за каждый дополнительный ГБ. Твой бюджет ${budget} €. Какое наибольшее целое число ГБ можно купить? (${fee} + ${per}x ≤ ${budget})`,
+      },
+      ...num(max),
+      unit: { lv: "GB", ru: "ГБ" },
+      hint: {
+        lv: "Risini kā vienādojumu, bet ar zīmi ≤. Beigās paņem lielāko veselo skaitli.",
+        ru: "Решай как уравнение, но со знаком ≤. В конце возьми наибольшее целое число.",
+      },
+      solution: {
+        lv: `${per}x ≤ ${budget} − ${fee} = ${budget - fee}; x ≤ ${fmt((budget - fee) / per)}; lielākais veselais x = ${max}`,
+        ru: `${per}x ≤ ${budget} − ${fee} = ${budget - fee}; x ≤ ${fmt((budget - fee) / per)}; наибольшее целое x = ${max}`,
+      },
+    };
+  },
+  statsMedian: (): Exercise => {
+    const n = pick([5, 7]);
+    const temps = Array.from({ length: n }, () => rnd(-6, 8));
+    const sorted = [...temps].sort((a, b) => a - b);
+    const kind = pick(["median", "range"] as const);
+    const answer = kind === "median" ? sorted[(n - 1) / 2] : sorted[n - 1] - sorted[0];
+    const s = (x: number) => String(x).replace("-", "−");
+    const list = temps.map(s).join("; ");
+    return {
+      question:
+        kind === "median"
+          ? {
+              lv: `Rēzeknē nedēļas laikā pusdienlaikā izmērīja temperatūru (°C): ${list}. Kāda ir mediāna?`,
+              ru: `В Резекне за неделю в полдень измеряли температуру (°C): ${list}. Чему равна медиана?`,
+            }
+          : {
+              lv: `Rēzeknē nedēļas laikā pusdienlaikā izmērīja temperatūru (°C): ${list}. Kāda ir amplitūda (starpība starp lielāko un mazāko)?`,
+              ru: `В Резекне за неделю в полдень измеряли температуру (°C): ${list}. Чему равна амплитуда (разность наибольшего и наименьшего)?`,
+            },
+      ...num(answer),
+      unit: U.c,
+      hint:
+        kind === "median"
+          ? { lv: "Sakārto skaitļus augošā secībā un paņem vidējo.", ru: "Упорядочи числа по возрастанию и возьми средний." }
+          : { lv: "Amplitūda = lielākā vērtība − mazākā vērtība.", ru: "Амплитуда = наибольшее значение − наименьшее." },
+      solution:
+        kind === "median"
+          ? {
+              lv: `Sakārtots: ${sorted.map(s).join("; ")} → vidējais (${(n + 1) / 2}.) skaitlis ir ${s(answer)}`,
+              ru: `По порядку: ${sorted.map(s).join("; ")} → средний (${(n + 1) / 2}-й) элемент ${s(answer)}`,
+            }
+          : {
+              lv: `${s(sorted[n - 1])} − (${s(sorted[0])}) = ${answer}`,
+              ru: `${s(sorted[n - 1])} − (${s(sorted[0])}) = ${answer}`,
+            },
+    };
+  },
+  arithSeq: (): Exercise => {
+    const a1 = pick([2, 3, 5, 10]);
+    const d = pick([1, 2, 3, 5]);
+    const k = rnd(8, 20);
+    const an = a1 + (k - 1) * d;
+    return {
+      question: {
+        lv: `Tu sāc krāt naudu: 1. nedēļā ieliec krājkasītē ${a1} €, un katru nākamo nedēļu par ${d} € vairāk nekā iepriekšējā. Cik eiro tu ieliksi ${k}. nedēļā?`,
+        ru: `Ты начинаешь копить: в 1-ю неделю кладёшь в копилку ${a1} €, а каждую следующую неделю на ${d} € больше, чем в предыдущую. Сколько евро ты положишь на ${k}-й неделе?`,
+      },
+      ...num(an),
+      unit: U.eur,
+      hint: {
+        lv: "Aritmētiskā progresija: aₙ = a₁ + (n − 1) · d",
+        ru: "Арифметическая прогрессия: aₙ = a₁ + (n − 1) · d",
+      },
+      solution: {
+        lv: `a${k} = ${a1} + (${k} − 1) · ${d} = ${a1} + ${(k - 1) * d} = ${an} €`,
+        ru: `a${k} = ${a1} + (${k} − 1) · ${d} = ${a1} + ${(k - 1) * d} = ${an} €`,
+      },
+    };
+  },
+  triangleInequality: (): Exercise => {
+    const ok = (() => {
+      const a = rnd(3, 9);
+      const b = rnd(3, 9);
+      return [a, b, rnd(Math.abs(a - b) + 1, a + b - 1)];
+    })();
+    const bad = () => {
+      const a = rnd(2, 6);
+      const b = rnd(2, 6);
+      return [a, b, a + b + rnd(0, 4)];
+    };
+    const fmtSet = (t: number[]) => [...t].sort((x, y) => x - y).join(", ");
+    const answer = fmtSet(ok);
+    return {
+      question: {
+        lv: "Tev ir koka nūjiņas (garumi cm). No kura komplekta var salikt trijstūri?",
+        ru: "У тебя есть деревянные палочки (длины в см). Из какого набора можно сложить треугольник?",
+      },
+      ...choice(answer, [fmtSet(bad()), fmtSet(bad()), fmtSet(bad())]),
+      hint: {
+        lv: "Trijstūra nevienādība: divu īsāko malu summai jābūt lielākai par garāko malu.",
+        ru: "Неравенство треугольника: сумма двух меньших сторон должна быть больше большей стороны.",
+      },
+      solution: (() => {
+        const [x, y, z] = [...ok].sort((p, q) => p - q);
+        return {
+          lv: `${x} + ${y} = ${x + y} > ${z}, tāpēc ${answer} der. Pārējos komplektos īsāko summa ≤ garākā mala.`,
+          ru: `${x} + ${y} = ${x + y} > ${z}, поэтому ${answer} подходит. В остальных наборах сумма меньших ≤ большей стороны.`,
+        };
+      })(),
     };
   },
 } satisfies Record<string, () => Exercise>;

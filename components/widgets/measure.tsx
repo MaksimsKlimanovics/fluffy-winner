@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useApp } from "../AppProvider";
 import { Readout, Slider, type WidgetProps, fmt } from "./shared";
 
-export function AreaGrid({ color }: WidgetProps) {
+export function AreaGrid({ color, grade }: WidgetProps) {
   const { t } = useApp();
   const [w, setW] = useState(5);
   const [h, setH] = useState(3);
@@ -37,20 +37,33 @@ export function AreaGrid({ color }: WidgetProps) {
       </svg>
       <Slider label={{ lv: "Garums a", ru: "Длина a" }} value={w} min={1} max={max} onChange={setW} suffix=" m" />
       <Slider label={{ lv: "Platums b", ru: "Ширина b" }} value={h} min={1} max={8} onChange={setH} suffix=" m" />
-      <Readout>
-        {t({ lv: "Laukums", ru: "Площадь" })} S = {w} · {h} = <b>{w * h} m²</b> ({w * h} {t({ lv: "rūtiņas", ru: "клеток" })})
-        <br />
-        {t({ lv: "Perimetrs", ru: "Периметр" })} P = 2 · ({w} + {h}) = <b>{2 * (w + h)} m</b>
-        <br />
-        <small>
-          {w === h
-            ? t({ lv: "Kvadrāts! Mala = √S", ru: "Квадрат! Сторона = √S" }) + ` = √${w * h} = ${w}`
-            : t({
-                lv: "Pamēģini: kuram taisnstūrim ar P = 16 ir lielākais laukums?",
-                ru: "Попробуй: у какого прямоугольника с P = 16 наибольшая площадь?",
-              })}
-        </small>
-      </Readout>
+      {grade <= 3 ? (
+        // Stage 1–3: area as a count of squares, perimeter as the sum of sides (Skola2030 3:6.4.2).
+        <Readout>
+          {t({ lv: "Laukums", ru: "Площадь" })}: <b>{w * h} {t({ lv: "rūtiņas", ru: "клеток" })}</b>
+          <br />
+          {t({ lv: "Apkārtmērs", ru: "Периметр" })}: {w} + {h} + {w} + {h} = <b>{2 * (w + h)} m</b>
+          <br />
+          <small>{t({ lv: "Saskaiti iekrāsotās rūtiņas un visas malas!", ru: "Посчитай закрашенные клетки и все стороны!" })}</small>
+        </Readout>
+      ) : (
+        <Readout>
+          {t({ lv: "Laukums", ru: "Площадь" })} S = {w} · {h} = <b>{w * h} m²</b> ({w * h} {t({ lv: "rūtiņas", ru: "клеток" })})
+          <br />
+          {t({ lv: "Perimetrs", ru: "Периметр" })} P = 2 · ({w} + {h}) = <b>{2 * (w + h)} m</b>
+          <br />
+          <small>
+            {w === h
+              ? grade >= 7
+                ? t({ lv: "Kvadrāts! Mala = √S", ru: "Квадрат! Сторона = √S" }) + ` = √${w * h} = ${w}`
+                : t({ lv: "Kvadrāts! Visas malas ir vienādas.", ru: "Квадрат! Все стороны равны." })
+              : t({
+                  lv: "Pārbaudi apgalvojumu: “taisnstūriem ar vienādu perimetru arī laukumi ir vienādi”. Atrodi pretpiemēru ar P = 16!",
+                  ru: "Проверь утверждение: «у прямоугольников с равным периметром и площади равны». Найди контрпример с P = 16!",
+                })}
+          </small>
+        </Readout>
+      )}
     </div>
   );
 }
@@ -147,7 +160,10 @@ export function Angle({ color }: WidgetProps) {
         <br />
         <small>
           {deg <= 180 &&
-            t({ lv: `Blakusleņķis: 180° − ${deg}° = ${180 - deg}°`, ru: `Смежный угол: 180° − ${deg}° = ${180 - deg}°` })}
+            t({
+              lv: `Līdz izstieptam leņķim (180°) trūkst: 180° − ${deg}° = ${180 - deg}°`,
+              ru: `До развёрнутого угла (180°) не хватает: 180° − ${deg}° = ${180 - deg}°`,
+            })}
         </small>
       </Readout>
     </div>
@@ -192,7 +208,7 @@ export function PercentBar({ color }: WidgetProps) {
   );
 }
 
-export function Circle({ color }: WidgetProps) {
+export function Circle({ color, grade }: WidgetProps) {
   const { t } = useApp();
   const [d, setD] = useState(4);
   const C = Math.PI * d;
@@ -220,18 +236,32 @@ export function Circle({ color }: WidgetProps) {
         </text>
       </svg>
       <Slider label={{ lv: "Diametrs d", ru: "Диаметр d" }} value={d} min={2} max={10} step={0.5} onChange={setD} />
-      <Readout>
-        C = π · d = 3,14 · {fmt(d)} ≈ <b>{fmt(C)}</b>
-        <br />
-        S = π · r² ≈ 3,14 · {fmt(d / 2)}² ≈ <b>{fmt(Math.PI * (d / 2) ** 2)}</b>
-        <br />
-        <small>
-          {t({
-            lv: "Riņķa līnijā vienmēr ietilpst nedaudz vairāk par 3 diametriem — tas ir π!",
-            ru: "В окружность всегда помещается чуть больше 3 диаметров — это и есть π!",
-          })}
-        </small>
-      </Readout>
+      {grade <= 6 ? (
+        // Stage 4–6: "riņķa līnijas garumu (aptuveni trīs diametri)"; π comes in 7–9.
+        <Readout>
+          C ≈ 3 · d = 3 · {fmt(d)} = <b>{fmt(3 * d)}</b>
+          <br />
+          <small>
+            {t({
+              lv: `Atritinātā līnija ir nedaudz garāka par 3 diametriem (≈ ${fmt(C)}).`,
+              ru: `Развёрнутая линия чуть длиннее 3 диаметров (≈ ${fmt(C)}).`,
+            })}
+          </small>
+        </Readout>
+      ) : (
+        <Readout>
+          C = π · d = 3,14 · {fmt(d)} ≈ <b>{fmt(C)}</b>
+          <br />
+          S = π · r² ≈ 3,14 · {fmt(d / 2)}² ≈ <b>{fmt(Math.PI * (d / 2) ** 2)}</b>
+          <br />
+          <small>
+            {t({
+              lv: "Riņķa līnijā vienmēr ietilpst nedaudz vairāk par 3 diametriem — tas ir π!",
+              ru: "В окружность всегда помещается чуть больше 3 диаметров — это и есть π!",
+            })}
+          </small>
+        </Readout>
+      )}
     </div>
   );
 }

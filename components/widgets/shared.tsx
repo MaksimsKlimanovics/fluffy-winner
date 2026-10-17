@@ -3,7 +3,8 @@
 import { useApp } from "../AppProvider";
 import type { T } from "@/lib/i18n";
 
-export type WidgetProps = { color: string };
+/** `grade` lets a widget stay inside the numbers and terms of its Skola2030 stage. */
+export type WidgetProps = { color: string; grade: number };
 
 export function Slider({
   label,

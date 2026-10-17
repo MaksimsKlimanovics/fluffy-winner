@@ -2,9 +2,10 @@ import type { GeneratorId } from "./exercises";
 import type { T } from "./i18n";
 
 /**
- * Topics follow the Latvian "Skola2030" mathematics standard for basic
- * education (grades 1–9). Each topic answers three questions for the child:
- * why do I need this, where do I meet it in real life, and how does it work —
+ * Topics follow the Skola2030 basic education standard for mathematics
+ * (Cabinet Regulation No. 747, Annex 6). Every topic lists the standard's
+ * outcome codes it builds towards — see lib/skola2030.ts. Each topic answers
+ * three questions for the child: why do I need this, where do I meet it in real life, and how does it work —
  * then lets them touch it (widget) and practise it (generator).
  */
 export type WidgetId =
@@ -23,7 +24,9 @@ export type WidgetId =
   | "linearGraph"
   | "pythagoras"
   | "parabola"
-  | "trig";
+  | "trig"
+  | "barChart"
+  | "coordPlane";
 
 export type Topic = {
   id: string;
@@ -36,6 +39,8 @@ export type Topic = {
   formula?: string;
   widget?: WidgetId;
   generator: GeneratorId;
+  /** Outcome codes from MK Nr. 747 Annex 6 for this grade's stage (see lib/skola2030.ts). */
+  skola2030: string[];
   askAi: T[];
 };
 
@@ -51,7 +56,7 @@ export const GRADES: Grade[] = [
   {
     grade: 1,
     title: { lv: "Pirmie soļi", ru: "Первые шаги" },
-    subtitle: { lv: "Skaitļi līdz 20, figūras, nauda", ru: "Числа до 20, фигуры, деньги" },
+    subtitle: { lv: "Skaitļi līdz 20, figūras, virknes, nauda", ru: "Числа до 20, фигуры, ряды, деньги" },
     color: "#ff8a3d",
     topics: [
       {
@@ -78,6 +83,7 @@ export const GRADES: Grade[] = [
         formula: "a + b = b + a",
         widget: "numberLine",
         generator: "add20",
+        skola2030: ["3.2.2", "1.2.2", "3.3.1"],
         askAi: [
           { lv: "Kāpēc 8 + 5 ir tas pats, kas 5 + 8?", ru: "Почему 8 + 5 — то же самое, что 5 + 8?" },
           { lv: "Kā ātri saskaitīt 9 + 7?", ru: "Как быстро сложить 9 + 7?" },
@@ -106,6 +112,7 @@ export const GRADES: Grade[] = [
         ],
         widget: "numberLine",
         generator: "sub20",
+        skola2030: ["3.2.2", "1.2.2", "3.3.1"],
         askAi: [{ lv: "Kā pārbaudīt atņemšanu ar saskaitīšanu?", ru: "Как проверить вычитание сложением?" }],
       },
       {
@@ -131,7 +138,33 @@ export const GRADES: Grade[] = [
         ],
         widget: "shapes",
         generator: "shapes",
+        skola2030: ["6.1.1", "6.1.2"],
         askAi: [{ lv: "Kur mājās var atrast trijstūri?", ru: "Где дома можно найти треугольник?" }],
+      },
+      {
+        id: "virknes",
+        title: { lv: "Skaitļu virknes", ru: "Числовые ряды" },
+        icon: "🪜",
+        kind: "algebra",
+        why: {
+          lv: "Likumsakarības palīdz paredzēt, kas būs tālāk: mājas numurus ielā, rakstu uz džempera, kāpņu pakāpienus.",
+          ru: "Закономерности помогают предсказать, что будет дальше: номера домов на улице, узор на свитере, ступеньки лестницы.",
+        },
+        realCase: {
+          title: { lv: "Māju numuri ielā", ru: "Номера домов на улице" },
+          text: {
+            lv: "Vienā ielas pusē mājām ir numuri 2, 4, 6, 8… Ja tu stāvi pie 8. mājas, nākamā būs 10 — katru reizi par 2 vairāk!",
+            ru: "На одной стороне улицы дома имеют номера 2, 4, 6, 8… Если ты стоишь у дома 8, следующий будет 10 — каждый раз на 2 больше!",
+          },
+        },
+        theory: [
+          { lv: "Virknē skaitļi seko viens otram pēc noteikuma.", ru: "В ряду числа следуют друг за другом по правилу." },
+          { lv: "Lai atrastu noteikumu, salīdzini blakus skaitļus: par cik tie atšķiras?", ru: "Чтобы найти правило, сравни соседние числа: на сколько они отличаются?" },
+        ],
+        widget: "numberLine",
+        generator: "sequence",
+        skola2030: ["4.1.1"],
+        askAi: [{ lv: "Kā izdomāt pašam savu virkni?", ru: "Как придумать свой собственный ряд?" }],
       },
       {
         id: "nauda-1",
@@ -155,6 +188,7 @@ export const GRADES: Grade[] = [
         ],
         widget: "coins",
         generator: "coins",
+        skola2030: ["3.1.3", "3.2.4", "5.3.4"],
         askAi: [{ lv: "Kā ar vismazāk monētām samaksāt 38 centus?", ru: "Как заплатить 38 центов наименьшим числом монет?" }],
       },
     ],
@@ -162,7 +196,7 @@ export const GRADES: Grade[] = [
   {
     grade: 2,
     title: { lv: "Skaitļi līdz 100", ru: "Числа до 100" },
-    subtitle: { lv: "Desmiti, reizināšana, laiks", ru: "Десятки, умножение, время" },
+    subtitle: { lv: "Desmiti, reizināšana, laiks, mērvienības", ru: "Десятки, умножение, время, единицы измерения" },
     color: "#ffb703",
     topics: [
       {
@@ -187,6 +221,7 @@ export const GRADES: Grade[] = [
         ],
         widget: "numberLine",
         generator: "add100",
+        skola2030: ["3.2.1", "3.1.1", "3.3.1"],
         askAi: [{ lv: "Kā saskaitīt 38 + 47 galvā?", ru: "Как сложить 38 + 47 в уме?" }],
       },
       {
@@ -211,6 +246,7 @@ export const GRADES: Grade[] = [
         ],
         widget: "multGrid",
         generator: "multSmall",
+        skola2030: ["3.2.2", "1.1.2"],
         askAi: [{ lv: "Kāpēc 3 · 4 ir tas pats, kas 4 · 3?", ru: "Почему 3 · 4 — то же, что 4 · 3?" }],
       },
       {
@@ -235,6 +271,7 @@ export const GRADES: Grade[] = [
         ],
         widget: "clock",
         generator: "clock",
+        skola2030: ["5.3.3", "5.3.4"],
         askAi: [{ lv: "Kā saprast, cik ir “bez ceturkšņa trīs”?", ru: "Как понять, сколько это «без четверти три»?" }],
       },
       {
@@ -259,14 +296,40 @@ export const GRADES: Grade[] = [
         ],
         widget: "coins",
         generator: "change",
+        skola2030: ["3.2.4", "3.1.3", "5.3.4"],
         askAi: [{ lv: "Kā ātri izrēķināt atlikumu no 5 eiro?", ru: "Как быстро посчитать сдачу с 5 евро?" }],
+      },
+      {
+        id: "mervienibas",
+        title: { lv: "Mērvienības", ru: "Единицы измерения" },
+        icon: "📏",
+        kind: "geometry",
+        why: {
+          lv: "Receptēs, veikalā un sportā lielumus mēra dažādās vienībās — jāprot tās pārvērst, lai salīdzinātu.",
+          ru: "В рецептах, магазине и спорте величины измеряют в разных единицах — нужно уметь их переводить, чтобы сравнивать.",
+        },
+        realCase: {
+          title: { lv: "Vai gulta ielīdīs?", ru: "Поместится ли кровать?" },
+          text: {
+            lv: "Gulta ir 2 m 5 cm gara, bet siena — 210 cm. 2 m 5 cm = 205 cm, un 205 < 210 — ielīdīs!",
+            ru: "Кровать длиной 2 м 5 см, а стена — 210 см. 2 м 5 см = 205 см, и 205 < 210 — поместится!",
+          },
+        },
+        theory: [
+          { lv: "1 m = 100 cm, 1 cm = 10 mm, 1 km = 1000 m.", ru: "1 м = 100 см, 1 см = 10 мм, 1 км = 1000 м." },
+          { lv: "1 kg = 1000 g; 1 h = 60 min; 1 € = 100 c.", ru: "1 кг = 1000 г; 1 ч = 60 мин; 1 € = 100 ц." },
+          { lv: "Lielāku vienību pārvēršot mazākā, skaitlis kļūst lielāks.", ru: "При переводе крупной единицы в мелкую число становится больше." },
+        ],
+        generator: "units",
+        skola2030: ["5.3.4", "1.1.2"],
+        askAi: [{ lv: "Kāpēc 1 m ir tieši 100 cm?", ru: "Почему в 1 м ровно 100 см?" }],
       },
     ],
   },
   {
     grade: 3,
     title: { lv: "Reizrēķins", ru: "Таблица умножения" },
-    subtitle: { lv: "Reizināšana, dalīšana, perimetrs", ru: "Умножение, деление, периметр" },
+    subtitle: { lv: "Reizināšana, dalīšana, perimetrs, diagrammas", ru: "Умножение, деление, периметр, диаграммы" },
     color: "#2ec4b6",
     topics: [
       {
@@ -291,6 +354,7 @@ export const GRADES: Grade[] = [
         ],
         widget: "multGrid",
         generator: "multTable",
+        skola2030: ["3.2.2", "3.2.1"],
         askAi: [{ lv: "Kā vieglāk iemācīties reizrēķinu ar 7?", ru: "Как легче выучить умножение на 7?" }],
       },
       {
@@ -315,6 +379,7 @@ export const GRADES: Grade[] = [
         ],
         widget: "multGrid",
         generator: "divTable",
+        skola2030: ["3.2.1", "3.2.2"],
         askAi: [{ lv: "Kāpēc nevar dalīt ar nulli?", ru: "Почему нельзя делить на ноль?" }],
       },
       {
@@ -340,6 +405,7 @@ export const GRADES: Grade[] = [
         formula: "P = 2(a + b)",
         widget: "areaGrid",
         generator: "perimeter",
+        skola2030: ["6.4.2"],
         askAi: [{ lv: "Vai divām figūrām ar vienādu perimetru ir vienāds laukums?", ru: "Если у двух фигур одинаковый периметр, равны ли их площади?" }],
       },
       {
@@ -363,7 +429,33 @@ export const GRADES: Grade[] = [
         ],
         widget: "numberLine",
         generator: "add1000",
+        skola2030: ["3.1.1", "3.2.1"],
         askAi: [{ lv: "Kā noapaļot 347 līdz desmitiem?", ru: "Как округлить 347 до десятков?" }],
+      },
+      {
+        id: "diagrammas",
+        title: { lv: "Tabulas un stabiņu diagrammas", ru: "Таблицы и столбчатые диаграммы" },
+        icon: "📊",
+        kind: "data",
+        why: {
+          lv: "Diagramma ļauj ar vienu skatienu redzēt, kā ir visvairāk un kā vismazāk — laika ziņās, sporta rezultātos, aptaujās.",
+          ru: "Диаграмма позволяет одним взглядом увидеть, чего больше всего и меньше всего — в прогнозе погоды, спорте, опросах.",
+        },
+        realCase: {
+          title: { lv: "Klases ekskursijas balsojums", ru: "Голосование за экскурсию" },
+          text: {
+            lv: "Klase balso: zoodārzs 9, Rundāles pils 6, akvaparks 11. Stabiņu diagrammā uzreiz redzams, ka uzvar akvaparks — par 2 balsīm vairāk nekā zoodārzs.",
+            ru: "Класс голосует: зоопарк 9, Рундальский дворец 6, аквапарк 11. На столбчатой диаграмме сразу видно, что побеждает аквапарк — на 2 голоса больше, чем зоопарк.",
+          },
+        },
+        theory: [
+          { lv: "Tabulā datus pieraksta rindās un kolonnās.", ru: "В таблице данные записывают в строках и столбцах." },
+          { lv: "Stabiņu diagrammā katra stabiņa augstums parāda skaitu.", ru: "На столбчатой диаграмме высота каждого столбика показывает количество." },
+        ],
+        widget: "barChart",
+        generator: "chart",
+        skola2030: ["5.1.2", "5.1.3", "5.1.4"],
+        askAi: [{ lv: "Kā uzzīmēt stabiņu diagrammu?", ru: "Как нарисовать столбчатую диаграмму?" }],
       },
     ],
   },
@@ -396,6 +488,7 @@ export const GRADES: Grade[] = [
         formula: "a/b",
         widget: "fractionPizza",
         generator: "fractionOf",
+        skola2030: ["3.2.4", "1.2.2"],
         askAi: [{ lv: "Kas ir lielāks — 1/3 vai 1/4?", ru: "Что больше — 1/3 или 1/4?" }],
       },
       {
@@ -421,6 +514,7 @@ export const GRADES: Grade[] = [
         formula: "S = a · b",
         widget: "areaGrid",
         generator: "areaRect",
+        skola2030: ["6.4.1", "5.3.2", "2.3.3"],
         askAi: [{ lv: "Kāpēc laukumu mēra kvadrātmetros?", ru: "Почему площадь измеряют в квадратных метрах?" }],
       },
       {
@@ -444,6 +538,7 @@ export const GRADES: Grade[] = [
         ],
         widget: "multGrid",
         generator: "longMult",
+        skola2030: ["3.2.1", "3.2.3"],
         askAi: [{ lv: "Parādi soli pa solim 36 · 7", ru: "Покажи по шагам 36 · 7" }],
       },
     ],
@@ -451,7 +546,7 @@ export const GRADES: Grade[] = [
   {
     grade: 5,
     title: { lv: "Decimāldaļas un leņķi", ru: "Десятичные дроби и углы" },
-    subtitle: { lv: "Decimāldaļas, daļu darbības, leņķi", ru: "Десятичные, действия с дробями, углы" },
+    subtitle: { lv: "Decimāldaļas, daļas, leņķi, ātrums, pirmskaitļi", ru: "Десятичные, дроби, углы, скорость, простые числа" },
     color: "#4361ee",
     topics: [
       {
@@ -476,6 +571,7 @@ export const GRADES: Grade[] = [
         ],
         widget: "numberLine",
         generator: "decimals",
+        skola2030: ["3.1.1", "3.2.1", "3.2.6"],
         askAi: [{ lv: "Kāpēc 0,5 ir tas pats, kas 1/2?", ru: "Почему 0,5 — это то же, что 1/2?" }],
       },
       {
@@ -501,6 +597,7 @@ export const GRADES: Grade[] = [
         formula: "a/n + b/n = (a+b)/n",
         widget: "fractionPizza",
         generator: "fractionAdd",
+        skola2030: ["3.2.1", "1.2.2"],
         askAi: [{ lv: "Kā saskaitīt 1/2 un 1/3?", ru: "Как сложить 1/2 и 1/3?" }],
       },
       {
@@ -525,14 +622,67 @@ export const GRADES: Grade[] = [
         ],
         widget: "angle",
         generator: "angles",
+        skola2030: ["6.1.3", "5.3.1", "6.4.1"],
         askAi: [{ lv: "Kāpēc pilnā aplī ir tieši 360 grādi?", ru: "Почему в полном круге именно 360 градусов?" }],
+      },
+      {
+        id: "atrums",
+        title: { lv: "Ātrums, ceļš un laiks", ru: "Скорость, путь и время" },
+        icon: "🚆",
+        kind: "algebra",
+        why: {
+          lv: "Ātrums palīdz plānot: kad jāiziet, lai paspētu uz vilcienu, un cik ilgi ies pārgājiens.",
+          ru: "Скорость помогает планировать: когда выйти, чтобы успеть на поезд, и сколько продлится поход.",
+        },
+        realCase: {
+          title: { lv: "Pārgājiens Gaujas nacionālajā parkā", ru: "Поход в Национальном парке Гауя" },
+          text: {
+            lv: "Taka ir 12 km gara, tu ej ar ātrumu 4 km/h. Laiks t = 12 : 4 = 3 stundas — tātad jāsāk ne vēlāk kā 3 stundas pirms tumsas.",
+            ru: "Тропа длиной 12 км, ты идёшь со скоростью 4 км/ч. Время t = 12 : 4 = 3 часа — значит, начать нужно не позже чем за 3 часа до темноты.",
+          },
+        },
+        theory: [
+          { lv: "Ceļš = ātrums · laiks (s = v · t).", ru: "Путь = скорость · время (s = v · t)." },
+          { lv: "Ja zināmi divi lielumi, trešo var aprēķināt: v = s : t, t = s : v.", ru: "Если известны две величины, третью можно найти: v = s : t, t = s : v." },
+          { lv: "Ātrumu mēra km/h vai m/s.", ru: "Скорость измеряют в км/ч или м/с." },
+        ],
+        formula: "s = v · t",
+        generator: "speed",
+        skola2030: ["4.2.3", "5.3.2"],
+        askAi: [{ lv: "Kā pārvērst km/h par m/s?", ru: "Как перевести км/ч в м/с?" }],
+      },
+      {
+        id: "pirmskaitli",
+        title: { lv: "Pirmskaitļi un saliktie skaitļi", ru: "Простые и составные числа" },
+        icon: "🧩",
+        kind: "algebra",
+        why: {
+          lv: "Dalītāji palīdz sadalīt lietas vienādās grupās, bet pirmskaitļi ir pamatā šifrēšanai, kas sargā tavas paroles internetā.",
+          ru: "Делители помогают делить вещи на равные группы, а простые числа лежат в основе шифрования, защищающего твои пароли в интернете.",
+        },
+        realCase: {
+          title: { lv: "Krēslu rindas zālē", ru: "Ряды стульев в зале" },
+          text: {
+            lv: "24 krēslus var salikt 2·12, 3·8, 4·6 rindās. Bet 23 krēslus vienādās rindās salikt nevar — 23 ir pirmskaitlis!",
+            ru: "24 стула можно расставить рядами 2·12, 3·8, 4·6. А 23 стула поровну по рядам не расставить — 23 простое число!",
+          },
+        },
+        theory: [
+          { lv: "Pirmskaitlis dalās tikai ar 1 un pats ar sevi (2, 3, 5, 7, 11…).", ru: "Простое число делится только на 1 и на себя (2, 3, 5, 7, 11…)." },
+          { lv: "Saliktam skaitlim ir vēl citi dalītāji (piem., 15 = 3 · 5).", ru: "У составного числа есть и другие делители (напр., 15 = 3 · 5)." },
+          { lv: "Dalāmības pazīmes: ar 2 — pāra skaitlis; ar 3 — ciparu summa dalās ar 3; ar 5 — beidzas ar 0 vai 5.", ru: "Признаки делимости: на 2 — чётное; на 3 — сумма цифр делится на 3; на 5 — оканчивается на 0 или 5." },
+        ],
+        widget: "multGrid",
+        generator: "primes",
+        skola2030: ["3.1.4", "2.1.3"],
+        askAi: [{ lv: "Kāpēc 1 nav pirmskaitlis?", ru: "Почему 1 не простое число?" }],
       },
     ],
   },
   {
     grade: 6,
     title: { lv: "Procenti un proporcijas", ru: "Проценты и пропорции" },
-    subtitle: { lv: "Procenti, attiecības, negatīvi skaitļi, aplis", ru: "Проценты, отношения, отрицательные, круг" },
+    subtitle: { lv: "Procenti, proporcijas, negatīvi skaitļi, koordinātas, vidējais", ru: "Проценты, пропорции, отрицательные, координаты, среднее" },
     color: "#7b2ff7",
     topics: [
       {
@@ -558,6 +708,7 @@ export const GRADES: Grade[] = [
         formula: "p% · A = A · p / 100",
         widget: "percentBar",
         generator: "percentOf",
+        skola2030: ["3.2.4", "3.2.2"],
         askAi: [{ lv: "Kāpēc −25% un tad −10% nav −35%?", ru: "Почему −25% и потом −10% — это не −35%?" }],
       },
       {
@@ -583,6 +734,7 @@ export const GRADES: Grade[] = [
         formula: "a/b = c/d",
         widget: "balance",
         generator: "proportion",
+        skola2030: ["4.2.4", "4.2.7"],
         askAi: [{ lv: "Kā izmantot kartes mērogu 1:50 000?", ru: "Как пользоваться масштабом карты 1:50 000?" }],
       },
       {
@@ -607,40 +759,93 @@ export const GRADES: Grade[] = [
         ],
         widget: "numberLine",
         generator: "negatives",
+        skola2030: ["3.2.1", "1.2.2", "2.2.6"],
         askAi: [{ lv: "Kāpēc mīnuss reiz mīnuss ir pluss?", ru: "Почему минус на минус даёт плюс?" }],
       },
       {
         id: "aplis",
-        title: { lv: "Riņķa līnija un π", ru: "Окружность и π" },
+        title: { lv: "Riņķa līnijas garums", ru: "Длина окружности" },
         icon: "🚲",
         kind: "geometry",
         why: {
-          lv: "Ar π aprēķina riteņa apgriezienus, apaļa galda malu, pat planētu orbītas.",
-          ru: "С помощью π считают обороты колеса, длину края круглого стола и даже орбиты планет.",
+          lv: "Zinot diametru, vari novērtēt, cik garš ir riteņa, apaļa galda vai dobes apkārtmērs — bez mērlentes.",
+          ru: "Зная диаметр, можно оценить длину обода колеса, края круглого стола или клумбы — без рулетки.",
         },
         realCase: {
-          title: { lv: "Velospidometrs", ru: "Велоспидометр" },
+          title: { lv: "Velosipēda ritenis", ru: "Колесо велосипеда" },
           text: {
-            lv: "Spidometrs zina riteņa diametru (66 cm) un skaita apgriezienus. 1 apgrieziens = 3,14 · 66 ≈ 207 cm. Tā tas zina, cik tu nobrauci!",
-            ru: "Спидометр знает диаметр колеса (66 см) и считает обороты. 1 оборот = 3,14 · 66 ≈ 207 см. Так он знает, сколько ты проехал!",
+            lv: "Riteņa diametrs ir 66 cm. Vienā apgriezienā ritenis nobrauc apmēram 3 · 66 ≈ 200 cm jeb 2 m. Pēc 100 apgriezieniem — jau ap 200 m!",
+            ru: "Диаметр колеса 66 см. За один оборот колесо проезжает примерно 3 · 66 ≈ 200 см, то есть 2 м. За 100 оборотов — уже около 200 м!",
           },
         },
         theory: [
-          { lv: "Riņķa līnijas garums C = π · d = 2πr.", ru: "Длина окружности C = π · d = 2πr." },
-          { lv: "Riņķa laukums S = πr².", ru: "Площадь круга S = πr²." },
-          { lv: "π ≈ 3,14 — jebkurā aplī garums : diametrs ir vienāds.", ru: "π ≈ 3,14 — в любом круге длина : диаметр одинаковы." },
+          { lv: "Diametrs ir nogrieznis caur centru no malas līdz malai; rādiuss ir puse diametra.", ru: "Диаметр — отрезок через центр от края до края; радиус — половина диаметра." },
+          { lv: "Riņķa līnijas garums ir aptuveni trīs diametri: C ≈ 3 · d.", ru: "Длина окружности — примерно три диаметра: C ≈ 3 · d." },
+          { lv: "Precīzāk tas ir nedaudz vairāk par 3 — šo skaitli iepazīsi 7.–9. klasē.", ru: "Точнее — чуть больше 3; это число ты узнаешь в 7–9 классах." },
         ],
-        formula: "C = πd,  S = πr²",
+        formula: "C ≈ 3 · d",
         widget: "circle",
-        generator: "circle",
-        askAi: [{ lv: "No kurienes radās skaitlis π?", ru: "Откуда взялось число π?" }],
+        generator: "circleApprox",
+        skola2030: ["6.4.1"],
+        askAi: [{ lv: "Kāpēc riņķa līnija ir apmēram trīs diametri?", ru: "Почему окружность — это примерно три диаметра?" }],
+      },
+      {
+        id: "videja-vertiba",
+        title: { lv: "Vidējā vērtība", ru: "Среднее значение" },
+        icon: "📊",
+        kind: "data",
+        why: {
+          lv: "Vidējais palīdz salīdzināt: atzīmes, laikapstākļus, sportistu rezultātus.",
+          ru: "Среднее помогает сравнивать: оценки, погоду, результаты спортсменов.",
+        },
+        realCase: {
+          title: { lv: "Semestra atzīme", ru: "Оценка за семестр" },
+          text: {
+            lv: "Atzīmes 7, 8, 6, 9 → (7+8+6+9) : 4 = 7,5. Vari aprēķināt, kāda atzīme vajadzīga nākamajā testā, lai sanāktu 8!",
+            ru: "Оценки 7, 8, 6, 9 → (7+8+6+9) : 4 = 7,5. Можно посчитать, какая оценка нужна в следующем тесте, чтобы вышло 8!",
+          },
+        },
+        theory: [
+          { lv: "Vidējais = visu vērtību summa : vērtību skaits.", ru: "Среднее = сумма всех значений : их количество." },
+          { lv: "Vidējais var nesakrist ne ar vienu no skaitļiem datu kopā.", ru: "Среднее может не совпадать ни с одним из чисел набора." },
+        ],
+        formula: "x̄ = (x₁ + … + xₙ) / n",
+        generator: "mean",
+        skola2030: ["5.1.5"],
+        askAi: [{ lv: "Ar ko atšķiras vidējais un mediāna?", ru: "Чем отличается среднее от медианы?" }],
+      },
+      {
+        id: "koordinatas",
+        title: { lv: "Koordinātu plakne", ru: "Координатная плоскость" },
+        icon: "🗺️",
+        kind: "geometry",
+        why: {
+          lv: "Koordinātas ir adrese punktam: tās izmanto kartēs, GPS, datorspēlēs un šahā.",
+          ru: "Координаты — это адрес точки: их используют в картах, GPS, компьютерных играх и шахматах.",
+        },
+        realCase: {
+          title: { lv: "Jūras kauja", ru: "Морской бой" },
+          text: {
+            lv: "Spēlē “Jūras kauja” šāviens “C5” ir punkts ar divām koordinātām. Koordinātu plaknē tā pati ideja: (3; 5) — 3 pa labi, 5 uz augšu.",
+            ru: "В игре «Морской бой» выстрел «C5» — это точка с двумя координатами. На координатной плоскости та же идея: (3; 5) — 3 вправо, 5 вверх.",
+          },
+        },
+        theory: [
+          { lv: "Punktu raksta kā (x; y): vispirms x (pa labi/kreisi), tad y (uz augšu/leju).", ru: "Точку записывают как (x; y): сначала x (вправо/влево), потом y (вверх/вниз)." },
+          { lv: "Koordinātu sākumpunkts ir (0; 0).", ru: "Начало координат — точка (0; 0)." },
+          { lv: "Negatīvs x — pa kreisi no y ass, negatīvs y — zem x ass.", ru: "Отрицательный x — слева от оси y, отрицательный y — под осью x." },
+        ],
+        widget: "coordPlane",
+        generator: "coords",
+        skola2030: ["6.2.1"],
+        askAi: [{ lv: "Kā atcerēties, kura koordināta ir pirmā?", ru: "Как запомнить, какая координата первая?" }],
       },
     ],
   },
   {
     grade: 7,
     title: { lv: "Algebras sākums", ru: "Начала алгебры" },
-    subtitle: { lv: "Vienādojumi, pakāpes, trijstūri, statistika", ru: "Уравнения, степени, треугольники, статистика" },
+    subtitle: { lv: "Vienādojumi, nevienādības, pakāpes, trijstūri, procentu izmaiņas", ru: "Уравнения, неравенства, степени, треугольники, изменения в %" },
     color: "#b5179e",
     topics: [
       {
@@ -666,6 +871,7 @@ export const GRADES: Grade[] = [
         formula: "ax + b = c  ⇒  x = (c − b) / a",
         widget: "balance",
         generator: "linearEq",
+        skola2030: ["4.3.4", "4.4.1"],
         askAi: [{ lv: "Kāpēc pārnesot mainās zīme?", ru: "Почему при переносе меняется знак?" }],
       },
       {
@@ -690,6 +896,7 @@ export const GRADES: Grade[] = [
         ],
         formula: "aᵐ · aⁿ = aᵐ⁺ⁿ",
         generator: "powers",
+        skola2030: ["4.3.3", "3.1.2"],
         askAi: [{ lv: "Kāpēc jebkurš skaitlis nultajā pakāpē ir 1?", ru: "Почему любое число в нулевой степени равно 1?" }],
       },
       {
@@ -715,38 +922,68 @@ export const GRADES: Grade[] = [
         formula: "α + β + γ = 180°",
         widget: "triangle",
         generator: "triangleAngles",
+        skola2030: ["6.4.1"],
         askAi: [{ lv: "Kā pierādīt, ka trijstūra leņķu summa ir 180°?", ru: "Как доказать, что сумма углов треугольника 180°?" }],
       },
       {
-        id: "statistika",
-        title: { lv: "Vidējā vērtība", ru: "Среднее значение" },
-        icon: "📊",
-        kind: "data",
+        id: "procentu-izmainas",
+        title: { lv: "Procentuālās izmaiņas", ru: "Процентные изменения" },
+        icon: "📈",
+        kind: "algebra",
         why: {
-          lv: "Vidējais palīdz salīdzināt: atzīmes, laikapstākļus, sportistu rezultātus.",
-          ru: "Среднее помогает сравнивать: оценки, погоду, результаты спортсменов.",
+          lv: "Cenas, algas un iedzīvotāju skaits mainās procentos. Kas prot tos rēķināt, to nevar apmānīt reklāmā.",
+          ru: "Цены, зарплаты и численность населения меняются в процентах. Кто умеет их считать, того не обманет реклама.",
         },
         realCase: {
-          title: { lv: "Semestra atzīme", ru: "Оценка за семестр" },
+          title: { lv: "Reklāmas triks", ru: "Рекламный трюк" },
           text: {
-            lv: "Atzīmes 7, 8, 6, 9 → (7+8+6+9) : 4 = 7,5. Vari aprēķināt, kāda atzīme vajadzīga nākamajā testā, lai sanāktu 8!",
-            ru: "Оценки 7, 8, 6, 9 → (7+8+6+9) : 4 = 7,5. Можно посчитать, какая оценка нужна в следующем тесте, чтобы вышло 8!",
+            lv: "Veikals pacēla cenu par 20%, pēc tam izsludināja “−20% atlaidi”. 100 € → 120 € → 96 €. Prece kļuva lētāka nevis par 0%, bet par 4%!",
+            ru: "Магазин поднял цену на 20%, а потом объявил «скидку −20%». 100 € → 120 € → 96 €. Товар подешевел не на 0%, а на 4%!",
           },
         },
         theory: [
-          { lv: "Vidējais = visu vērtību summa : vērtību skaits.", ru: "Среднее = сумма всех значений : их количество." },
-          { lv: "Mediāna — vidējā vērtība sakārtotā rindā.", ru: "Медиана — серединное значение упорядоченного ряда." },
+          { lv: "Palielinājums par p%: reizinām ar (1 + p/100).", ru: "Увеличение на p%: умножаем на (1 + p/100)." },
+          { lv: "Samazinājums par p%: reizinām ar (1 − p/100).", ru: "Уменьшение на p%: умножаем на (1 − p/100)." },
+          { lv: "Katrs nākamais procents tiek rēķināts no jaunās vērtības.", ru: "Каждый следующий процент считается от нового значения." },
         ],
-        formula: "x̄ = (x₁ + … + xₙ) / n",
-        generator: "mean",
-        askAi: [{ lv: "Ar ko atšķiras vidējais un mediāna?", ru: "Чем отличается среднее от медианы?" }],
+        formula: "A · (1 ± p/100)",
+        widget: "percentBar",
+        generator: "percentChange",
+        skola2030: ["3.2.4", "3.2.5"],
+        askAi: [{ lv: "Kā pārbaudīt, vai reklāmas atlaide ir godīga?", ru: "Как проверить, честная ли скидка в рекламе?" }],
+      },
+      {
+        id: "nevienadibas",
+        title: { lv: "Lineāras nevienādības", ru: "Линейные неравенства" },
+        icon: "📱",
+        kind: "algebra",
+        why: {
+          lv: "Nevienādības atbild uz jautājumiem “cik daudz drīkst?” un “cik vismaz vajag?” — budžetā, laikā, svarā.",
+          ru: "Неравенства отвечают на вопросы «сколько можно?» и «сколько нужно хотя бы?» — в бюджете, времени, весе.",
+        },
+        realCase: {
+          title: { lv: "Lifta kravnesība", ru: "Грузоподъёмность лифта" },
+          text: {
+            lv: "Lifts iztur 400 kg. Kurjers sver 80 kg, katra kaste — 30 kg: 80 + 30x ≤ 400 → x ≤ 10,6… Var vest ne vairāk kā 10 kastes.",
+            ru: "Лифт выдерживает 400 кг. Курьер весит 80 кг, каждая коробка — 30 кг: 80 + 30x ≤ 400 → x ≤ 10,6… Можно везти не больше 10 коробок.",
+          },
+        },
+        theory: [
+          { lv: "Nevienādību risina kā vienādojumu, bet atbilde ir skaitļu kopa.", ru: "Неравенство решают как уравнение, но ответ — множество чисел." },
+          { lv: "Reizinot vai dalot ar negatīvu skaitli, nevienādības zīme mainās uz pretējo.", ru: "При умножении или делении на отрицательное число знак неравенства меняется на противоположный." },
+        ],
+        formula: "ax + b ≤ c",
+        widget: "numberLine",
+        generator: "inequality",
+        skola2030: ["4.3.4", "4.4.1"],
+        askAi: [{ lv: "Kāpēc, dalot ar negatīvu skaitli, zīme mainās?", ru: "Почему при делении на отрицательное число знак меняется?" }],
       },
     ],
   },
   {
     grade: 8,
     title: { lv: "Funkcijas un Pitagors", ru: "Функции и Пифагор" },
-    subtitle: { lv: "Lineāra funkcija, Pitagora teorēma, √, varbūtība", ru: "Линейная функция, теорема Пифагора, √, вероятность" },
+    subtitle: { lv: "Lineāra funkcija, Pitagors, √, π, statistika, varbūtība", ru: "Линейная функция, Пифагор, √, π, статистика, вероятность" },
     color: "#f72585",
     topics: [
       {
@@ -772,6 +1009,7 @@ export const GRADES: Grade[] = [
         formula: "y = kx + b",
         widget: "linearGraph",
         generator: "linearFunction",
+        skola2030: ["4.2.2", "4.2.3"],
         askAi: [{ lv: "Kā no grafika noteikt k un b?", ru: "Как по графику определить k и b?" }],
       },
       {
@@ -797,6 +1035,7 @@ export const GRADES: Grade[] = [
         formula: "c² = a² + b²",
         widget: "pythagoras",
         generator: "pythagoras",
+        skola2030: ["6.4.1"],
         askAi: [{ lv: "Kā būvnieki izmanto 3-4-5 trijstūri?", ru: "Как строители используют треугольник 3-4-5?" }],
       },
       {
@@ -822,6 +1061,7 @@ export const GRADES: Grade[] = [
         formula: "√(a²) = |a|",
         widget: "areaGrid",
         generator: "sqrt",
+        skola2030: ["3.1.1", "3.2.1"],
         askAi: [{ lv: "Kā novērtēt √50 bez kalkulatora?", ru: "Как оценить √50 без калькулятора?" }],
       },
       {
@@ -846,14 +1086,68 @@ export const GRADES: Grade[] = [
         ],
         formula: "P(A) = m / n",
         generator: "probability",
+        skola2030: ["5.2.2", "5.2.3"],
         askAi: [{ lv: "Vai pēc 5 “ģērboņiem” nākamais noteikti būs “cipars”?", ru: "Если 5 раз выпал «орёл», обязательно ли выпадет «решка»?" }],
+      },
+      {
+        id: "rinkis-pi",
+        title: { lv: "Riņķa līnija, riņķis un π", ru: "Окружность, круг и π" },
+        icon: "⭕",
+        kind: "geometry",
+        why: {
+          lv: "Ar π precīzi aprēķina riteņa ceļu, apaļas dobes laukumu un pat planētu orbītas.",
+          ru: "С помощью π точно вычисляют путь колеса, площадь круглой клумбы и даже орбиты планет.",
+        },
+        realCase: {
+          title: { lv: "Velospidometrs", ru: "Велоспидометр" },
+          text: {
+            lv: "Spidometrs zina riteņa diametru (66 cm) un skaita apgriezienus. 1 apgrieziens = π · 66 ≈ 207 cm. Tā tas zina, cik tu nobrauci!",
+            ru: "Спидометр знает диаметр колеса (66 см) и считает обороты. 1 оборот = π · 66 ≈ 207 см. Так он знает, сколько ты проехал!",
+          },
+        },
+        theory: [
+          { lv: "Jebkurā riņķa līnijā garums : diametrs = π ≈ 3,14.", ru: "В любой окружности длина : диаметр = π ≈ 3,14." },
+          { lv: "Riņķa līnijas garums C = π · d = 2πr.", ru: "Длина окружности C = π · d = 2πr." },
+          { lv: "Riņķa laukums S = πr².", ru: "Площадь круга S = πr²." },
+        ],
+        formula: "C = πd,  S = πr²",
+        widget: "circle",
+        generator: "circle",
+        skola2030: ["6.4.1", "3.2.8"],
+        askAi: [{ lv: "No kurienes radās skaitlis π?", ru: "Откуда взялось число π?" }],
+      },
+      {
+        id: "moda-mediana",
+        title: { lv: "Moda, mediāna, amplitūda", ru: "Мода, медиана, размах" },
+        icon: "🌡️",
+        kind: "data",
+        why: {
+          lv: "Vidējais ne vienmēr stāsta patiesību. Mediāna un amplitūda palīdz saprast datus, kuros ir “izlēcēji”.",
+          ru: "Среднее не всегда говорит правду. Медиана и размах помогают понять данные, в которых есть «выбросы».",
+        },
+        realCase: {
+          title: { lv: "Algas ziņās", ru: "Зарплаты в новостях" },
+          text: {
+            lv: "Uzņēmumā 9 darbinieki saņem 1200 €, direktors — 12 000 €. Vidējā alga 2280 €, bet mediāna 1200 € — tā daudz labāk raksturo, cik saņem vairums.",
+            ru: "На предприятии 9 сотрудников получают 1200 €, директор — 12 000 €. Средняя зарплата 2280 €, а медиана 1200 € — она гораздо лучше показывает, сколько получает большинство.",
+          },
+        },
+        theory: [
+          { lv: "Moda — vērtība, kas datu kopā sastopama visbiežāk.", ru: "Мода — значение, которое встречается в наборе чаще всего." },
+          { lv: "Mediāna — vidējā vērtība sakārtotā datu kopā.", ru: "Медиана — серединное значение упорядоченного набора." },
+          { lv: "Amplitūda — starpība starp lielāko un mazāko vērtību.", ru: "Амплитуда (размах) — разность между наибольшим и наименьшим значением." },
+        ],
+        widget: "barChart",
+        generator: "statsMedian",
+        skola2030: ["5.1.4", "5.1.6"],
+        askAi: [{ lv: "Kad labāk izmantot mediānu, nevis vidējo?", ru: "Когда лучше использовать медиану, а не среднее?" }],
       },
     ],
   },
   {
     grade: 9,
     title: { lv: "Gatavojamies eksāmenam", ru: "Готовимся к экзамену" },
-    subtitle: { lv: "Kvadrātvienādojumi, sistēmas, līdzība, trigonometrija", ru: "Квадратные уравнения, системы, подобие, тригонометрия" },
+    subtitle: { lv: "Kvadrātvienādojumi, sistēmas, progresija, līdzība, trigonometrija", ru: "Квадратные уравнения, системы, прогрессия, подобие, тригонометрия" },
     color: "#3a0ca3",
     topics: [
       {
@@ -880,6 +1174,7 @@ export const GRADES: Grade[] = [
         formula: "x = (−b ± √D) / 2a",
         widget: "parabola",
         generator: "quadratic",
+        skola2030: ["4.3.4", "4.2.2"],
         askAi: [{ lv: "Ko diskriminants pasaka par parabolu?", ru: "Что дискриминант говорит о параболе?" }],
       },
       {
@@ -904,6 +1199,7 @@ export const GRADES: Grade[] = [
         ],
         widget: "linearGraph",
         generator: "system",
+        skola2030: ["4.3.4", "4.4.1"],
         askAi: [{ lv: "Kad sistēmai nav atrisinājuma?", ru: "Когда у системы нет решения?" }],
       },
       {
@@ -929,6 +1225,7 @@ export const GRADES: Grade[] = [
         formula: "a₁/a₂ = b₁/b₂ = k",
         widget: "trig",
         generator: "similarity",
+        skola2030: ["6.3.3"],
         askAi: [{ lv: "Kāpēc laukumi attiecas kā k²?", ru: "Почему площади относятся как k²?" }],
       },
       {
@@ -955,6 +1252,7 @@ export const GRADES: Grade[] = [
         formula: "tg α = a / b",
         widget: "trig",
         generator: "trig",
+        skola2030: ["6.4.1", "1.1.3"],
         askAi: [{ lv: "Kā atcerēties, kas ir sin, cos un tg?", ru: "Как запомнить, что такое sin, cos и tg?" }],
       },
       {
@@ -981,7 +1279,60 @@ export const GRADES: Grade[] = [
         formula: "V = a · b · c",
         widget: "areaGrid",
         generator: "volume",
+        skola2030: ["6.4.1"],
         askAi: [{ lv: "Kāpēc 1 m³ ir 1000 litri?", ru: "Почему в 1 м³ 1000 литров?" }],
+      },
+      {
+        id: "progresija",
+        title: { lv: "Aritmētiskā progresija", ru: "Арифметическая прогрессия" },
+        icon: "🐷",
+        kind: "algebra",
+        why: {
+          lv: "Progresija apraksta vienmērīgu augšanu: krājumus, treniņu slodzi, sēdvietas amfiteātrī.",
+          ru: "Прогрессия описывает равномерный рост: накопления, нагрузку на тренировках, места в амфитеатре.",
+        },
+        realCase: {
+          title: { lv: "Treniņu plāns", ru: "План тренировок" },
+          text: {
+            lv: "Pirmajā dienā noskrien 1 km, katru nākamo dienu — par 0,5 km vairāk. 15. dienā: 1 + 14 · 0,5 = 8 km. Bez formulas būtu jāskaita 15 reizes!",
+            ru: "В первый день пробегаешь 1 км, каждый следующий — на 0,5 км больше. На 15-й день: 1 + 14 · 0,5 = 8 км. Без формулы пришлось бы считать 15 раз!",
+          },
+        },
+        theory: [
+          { lv: "Aritmētiskajā progresijā katrs nākamais loceklis ir par d lielāks: aₙ₊₁ = aₙ + d.", ru: "В арифметической прогрессии каждый следующий член больше на d: aₙ₊₁ = aₙ + d." },
+          { lv: "n-tais loceklis: aₙ = a₁ + (n − 1)d.", ru: "n-й член: aₙ = a₁ + (n − 1)d." },
+        ],
+        formula: "aₙ = a₁ + (n − 1)d",
+        widget: "numberLine",
+        generator: "arithSeq",
+        skola2030: ["4.1.1"],
+        askAi: [{ lv: "Kā atrast pirmo 10 locekļu summu?", ru: "Как найти сумму первых 10 членов?" }],
+      },
+      {
+        id: "trijstura-nevienadiba",
+        title: { lv: "Trijstūra nevienādība", ru: "Неравенство треугольника" },
+        icon: "📐",
+        kind: "geometry",
+        why: {
+          lv: "Taisnais ceļš vienmēr ir īsākais. Tas palīdz plānot maršrutus un pārbaudīt, vai konstrukciju vispār var uzbūvēt.",
+          ru: "Прямой путь всегда кратчайший. Это помогает планировать маршруты и проверять, можно ли вообще построить конструкцию.",
+        },
+        realCase: {
+          title: { lv: "Taka pāri parkam", ru: "Тропинка через парк" },
+          text: {
+            lv: "Gar parka malām ir 300 m + 400 m, bet cilvēki iemin taku pa diagonāli — tā noteikti ir īsāka par 700 m (patiesībā 500 m).",
+            ru: "Вдоль краёв парка 300 м + 400 м, но люди протаптывают тропинку по диагонали — она точно короче 700 м (на самом деле 500 м).",
+          },
+        },
+        theory: [
+          { lv: "Jebkurā trijstūrī divu malu summa ir lielāka par trešo malu.", ru: "В любом треугольнике сумма двух сторон больше третьей стороны." },
+          { lv: "Pietiek pārbaudīt: divu īsāko malu summa > garākā mala.", ru: "Достаточно проверить: сумма двух меньших сторон > большей стороны." },
+        ],
+        formula: "a + b > c",
+        widget: "triangle",
+        generator: "triangleInequality",
+        skola2030: ["6.4.3", "6.2.1"],
+        askAi: [{ lv: "Kas notiek, ja a + b = c?", ru: "Что будет, если a + b = c?" }],
       },
     ],
   },

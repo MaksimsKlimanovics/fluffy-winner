@@ -3,6 +3,7 @@
 import type { WidgetId } from "@/lib/curriculum";
 import { LinearGraph, Parabola, Pythagoras, Triangle, Trig } from "./advanced";
 import { Clock, Coins, MultGrid, NumberLine, Shapes } from "./basic";
+import { BarChart, CoordPlane } from "./data";
 import { Angle, AreaGrid, Balance, Circle, FractionPizza, PercentBar } from "./measure";
 import type { WidgetProps } from "./shared";
 
@@ -23,9 +24,11 @@ const WIDGETS: Record<WidgetId, (props: WidgetProps) => React.ReactNode> = {
   pythagoras: Pythagoras,
   parabola: Parabola,
   trig: Trig,
+  barChart: BarChart,
+  coordPlane: CoordPlane,
 };
 
-export function Widget({ id, color }: { id: WidgetId; color: string }) {
+export function Widget({ id, color, grade }: { id: WidgetId; color: string; grade: number }) {
   const Component = WIDGETS[id];
-  return <Component color={color} />;
+  return <Component color={color} grade={grade} />;
 }
