@@ -7,8 +7,8 @@ import { type T, UI } from "@/lib/i18n";
 import { useApp } from "./AppProvider";
 import { BottomNav, TopBar } from "./Chrome";
 import { Mascot } from "./Mascot";
-
-type Msg = { role: "user" | "assistant"; content: string };
+import { Messages, RichText } from "./chat/Messages";
+import { useTutorChat } from "./chat/useTutorChat";
 
 const STARTERS: T[] = [
   { lv: "Kāpēc man vispār vajag matemātiku?", ru: "Зачем мне вообще нужна математика?" },
@@ -17,35 +17,17 @@ const STARTERS: T[] = [
   { lv: "Iedod man interesantu uzdevumu!", ru: "Дай мне интересную задачку!" },
 ];
 
-/** Renders **bold** and line breaks — the only formatting the tutor is asked to use. */
-function RichText({ text }: { text: string }) {
-  return (
-    <>
-      {text.split("\n").map((line, i) => (
-        <span key={i} className="line">
-          {line.split(/(\*\*[^*]+\*\*)/g).map((part, j) =>
-            part.startsWith("**") && part.endsWith("**") ? <strong key={j}>{part.slice(2, -2)}</strong> : part,
-          )}
-          {"\n"}
-        </span>
-      ))}
-    </>
-  );
-}
-
 export function ChatView() {
-  const { t, lang } = useApp();
+  const { t } = useApp();
   const params = useSearchParams();
   const grade = Number(params.get("grade")) || undefined;
   const topicId = params.get("topic") ?? undefined;
   const g = grade ? getGrade(grade) : undefined;
   const topic = g && topicId ? getTopic(g.grade, topicId) : undefined;
 
-  const [messages, setMessages] = useState<Msg[]>([]);
+  const { messages, busy, send: sendRaw, reset } = useTutorChat({ grade: g?.grade, topicId: topic?.id });
   const [input, setInput] = useState("");
-  const [busy, setBusy] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const abortRef = useRef<AbortController | null>(null);
   const prefilled = useRef(false);
 
   useEffect(() => {
@@ -60,51 +42,11 @@ export function ChatView() {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages]);
 
-  useEffect(() => () => abortRef.current?.abort(), []);
-
-  async function send(text: string) {
-    const content = text.trim();
-    if (!content || busy) return;
-    const history: Msg[] = [...messages, { role: "user", content }];
-    setMessages([...history, { role: "assistant", content: "" }]);
+  const send = (text: string) => {
+    if (!text.trim() || busy) return;
     setInput("");
-    setBusy(true);
-
-    const controller = new AbortController();
-    abortRef.current = controller;
-    const append = (chunk: string) =>
-      setMessages((prev) => {
-        const next = [...prev];
-        const last = next[next.length - 1];
-        next[next.length - 1] = { ...last, content: last.content + chunk };
-        return next;
-      });
-
-    try {
-      const res = await fetch("/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: history, lang, grade: g?.grade, topicId: topic?.id }),
-        signal: controller.signal,
-      });
-      if (!res.ok || !res.body) {
-        const data = await res.json().catch(() => null);
-        append(data?.error ?? t(UI.chatError));
-        return;
-      }
-      const reader = res.body.getReader();
-      const decoder = new TextDecoder();
-      for (;;) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        append(decoder.decode(value, { stream: true }));
-      }
-    } catch (err) {
-      if ((err as Error).name !== "AbortError") append(t(UI.chatError));
-    } finally {
-      setBusy(false);
-    }
-  }
+    void sendRaw(text);
+  };
 
   const color = g?.color ?? "#5b5bf7";
 
@@ -124,10 +66,7 @@ export function ChatView() {
         {messages.length > 0 && (
           <button
             className="btn ghost small"
-            onClick={() => {
-              abortRef.current?.abort();
-              setMessages([]);
-            }}
+            onClick={reset}
           >
             ↺ {t(UI.chatClear)}
           </button>
@@ -148,11 +87,7 @@ export function ChatView() {
             ))}
           </div>
         )}
-        {messages.map((m, i) => (
-          <div key={i} className={`msg ${m.role}`}>
-            {m.content ? <RichText text={m.content} /> : <span className="typing"><i /><i /><i /></span>}
-          </div>
-        ))}
+        <Messages messages={messages} />
         <p className="disclaimer">{t(UI.aiDisclaimer)}</p>
       </div>
 

@@ -1,11 +1,12 @@
 "use client";
 
-import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
-import { type Exercise, type GeneratorId, checkAnswer, formatAnswer, generators } from "@/lib/exercises";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { type Exercise, type GeneratorId, checkAnswer, formatAnswer, generateExercise, newSeed } from "@/lib/exercises";
 import { UI } from "@/lib/i18n";
+import type { ExerciseContext } from "@/lib/tutor";
 import { useApp } from "./AppProvider";
 import { Mascot } from "./Mascot";
+import { ExerciseTutor } from "./chat/ExerciseTutor";
 
 type Status = "idle" | "correct" | "wrong";
 
@@ -22,27 +23,41 @@ export function ExerciseCard({
 }) {
   const { t, addStar } = useApp();
   // Generated after mount: random numbers would otherwise differ between
-  // the server render and hydration.
-  const [ex, setEx] = useState<Exercise | null>(null);
+  // the server render and hydration. The seed lets the tutor API rebuild the
+  // exact same exercise, answer key included.
+  const [task, setTask] = useState<{ seed: number; ex: Exercise } | null>(null);
   const [input, setInput] = useState("");
   const [status, setStatus] = useState<Status>("idle");
-  const [tries, setTries] = useState(0);
+  const [attempts, setAttempts] = useState<string[]>([]);
   const [showHint, setShowHint] = useState(false);
   const [showSolution, setShowSolution] = useState(false);
+  const [showTutor, setShowTutor] = useState(false);
   const [streak, setStreak] = useState(0);
 
   const next = useCallback(() => {
-    setEx(generators[generator]());
+    const seed = newSeed();
+    setTask({ seed, ex: generateExercise(generator, seed) });
     setInput("");
     setStatus("idle");
-    setTries(0);
+    setAttempts([]);
     setShowHint(false);
     setShowSolution(false);
   }, [generator]);
 
   useEffect(next, [next]);
 
-  if (!ex) return <div className="exercise skeleton" />;
+  // The tutor reads this at send time, so it always sees the latest state.
+  const contextRef = useRef<ExerciseContext | null>(null);
+  contextRef.current = task && {
+    generator,
+    seed: task.seed,
+    attempts,
+    status: status === "correct" ? (showSolution ? "solution_shown" : "solved") : showSolution ? "solution_shown" : "unsolved",
+  };
+  const getContext = useCallback(() => contextRef.current!, []);
+
+  if (!task) return <div className="exercise skeleton" />;
+  const { ex, seed } = task;
 
   const submit = (value: string) => {
     if (status === "correct" || !value.trim()) return;
@@ -54,16 +69,11 @@ export function ExerciseCard({
       }
     } else {
       setStatus("wrong");
-      setTries((n) => n + 1);
+      setAttempts((a) => [...a, value.trim()]);
       setStreak(0);
-      if (tries >= 1) setShowHint(true);
+      if (attempts.length >= 1) setShowHint(true);
     }
   };
-
-  const askQuestion = `${t(ex.question)}\n\n${t({
-    lv: "Es nesaprotu, kā to atrisināt. Vari palīdzēt ar padomu?",
-    ru: "Я не понимаю, как это решить. Можешь помочь подсказкой?",
-  })}`;
 
   return (
     <div className={`exercise status-${status}`} style={{ "--c": color } as React.CSSProperties}>
@@ -149,21 +159,36 @@ export function ExerciseCard({
             💡 {t(UI.hint)}
           </button>
         )}
-        {!showSolution && (tries >= 2 || status === "correct") && (
+        {!showSolution && (attempts.length >= 2 || status === "correct") && (
           <button className="btn ghost" onClick={() => setShowSolution(true)}>
             {t(UI.showSolution)}
           </button>
         )}
-        <Link
-          className="btn ghost"
-          href={`/chat?grade=${grade}&topic=${topicId}&q=${encodeURIComponent(askQuestion)}`}
+        <button
+          className={`btn ${showTutor ? "tutor-on" : "ghost"}`}
+          onClick={() => setShowTutor((v) => !v)}
+          aria-expanded={showTutor}
         >
           💬 {t(UI.askAi)}
-        </Link>
+        </button>
         <button className="btn primary" onClick={next}>
           {t(UI.newTask)} ↻
         </button>
       </div>
+
+      {showTutor && (
+        // Keyed by seed: a new exercise starts a fresh conversation.
+        <ExerciseTutor
+          key={seed}
+          grade={grade}
+          topicId={topicId}
+          color={color}
+          getContext={getContext}
+          hasWrongAttempts={attempts.length > 0}
+          solved={status === "correct"}
+          onClose={() => setShowTutor(false)}
+        />
+      )}
     </div>
   );
 }

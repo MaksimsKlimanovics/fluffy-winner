@@ -1,5 +1,5 @@
 import Anthropic from "@anthropic-ai/sdk";
-import { buildSystemPrompt, sanitizeHistory } from "@/lib/tutor";
+import { buildSystemPrompt, parseExerciseContext, sanitizeHistory } from "@/lib/tutor";
 import type { Lang } from "@/lib/i18n";
 
 export const runtime = "nodejs";
@@ -53,6 +53,7 @@ export async function POST(req: Request) {
 
   const grade = typeof body.grade === "number" ? body.grade : undefined;
   const topicId = typeof body.topicId === "string" ? body.topicId : undefined;
+  const exercise = parseExerciseContext(body.exercise, grade, topicId);
 
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "local";
   if (rateLimited(ip)) return Response.json({ error: text.busy }, { status: 429 });
@@ -70,14 +71,15 @@ export async function POST(req: Request) {
         const messageStream = client.beta.messages.stream(
           {
             model: MODEL,
-            max_tokens: 4000,
-            // Short, friendly tutoring turns: low effort keeps replies fast.
-            output_config: { effort: "low" },
+            max_tokens: 8000,
+            // General chat stays fast; walking through a concrete exercise
+            // step by step gets a bit more thinking so the steps are right.
+            output_config: { effort: exercise ? "medium" : "low" },
             // If a safety classifier declines, retry on Anthropic's
             // recommended fallback model instead of failing the turn.
             betas: ["server-side-fallback-2026-07-01"],
             fallbacks: "default",
-            system: buildSystemPrompt(lang, grade, topicId),
+            system: buildSystemPrompt(lang, grade, topicId, exercise),
             messages: history,
           },
           { signal: req.signal },
