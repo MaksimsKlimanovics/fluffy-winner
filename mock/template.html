@@ -1,0 +1,219 @@
+<title>Cipariņi prototips</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap">
+<style>
+/* Layout: a quiet presentation shell (left panel) around one live device on a stage. */
+:root {
+  --shell-bg: #e9ebfa;
+  --shell-panel: #ffffff;
+  --shell-fg: #24263f;
+  --shell-muted: #5a5d82;
+  --shell-line: #d8dbf1;
+  --shell-accent: #4f4fe8;
+  --shell-accent-fg: #ffffff;
+  --shell-chip: #f0f1fc;
+  --font: "Nunito", ui-rounded, "Segoe UI", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --shell-bg: #14152a; --shell-panel: #1d1f38; --shell-fg: #ebecff; --shell-muted: #a9acd6;
+    --shell-line: #30335a; --shell-accent: #9393ff; --shell-accent-fg: #14152a; --shell-chip: #262949;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --shell-bg: #14152a; --shell-panel: #1d1f38; --shell-fg: #ebecff; --shell-muted: #a9acd6;
+  --shell-line: #30335a; --shell-accent: #9393ff; --shell-accent-fg: #14152a; --shell-chip: #262949;
+  color-scheme: dark;
+}
+html, body { height: 100%; }
+body {
+  background: var(--shell-bg);
+  color: var(--shell-fg);
+  font-family: var(--font);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  box-sizing: border-box;
+}
+.shell {
+  min-height: 100%;
+  display: grid;
+  grid-template-columns: minmax(260px, 320px) minmax(0, 1fr);
+  gap: 32px;
+  padding-block: 24px;
+  box-sizing: border-box;
+}
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  align-self: start;
+  position: sticky;
+  top: max(24px, env(safe-area-inset-top, 0px));
+}
+.panel h1 { font-size: 40px; font-weight: 900; letter-spacing: -0.5px; margin: 0; text-wrap: balance; color: var(--shell-fg); }
+.lede { margin: 6px 0 0; font-size: 16px; line-height: 1.5; color: var(--shell-muted); }
+.eyebrow { font-size: 12px; font-weight: 900; letter-spacing: 0.8px; text-transform: uppercase; color: var(--shell-muted); margin: 0 0 8px; }
+.seg { display: flex; padding: 4px; gap: 4px; border-radius: 14px; background: var(--shell-panel); border: 1px solid var(--shell-line); }
+.seg button {
+  flex: 1; border: 0; border-radius: 10px; padding: 9px 6px; background: transparent; cursor: pointer;
+  font: 800 14px var(--font); color: var(--shell-muted);
+}
+.seg button[aria-pressed="true"] { background: var(--shell-accent); color: var(--shell-accent-fg); }
+.tries { display: flex; flex-direction: column; gap: 6px; }
+.tries button {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px; text-align: left;
+  border: 1px solid var(--shell-line); background: var(--shell-panel); color: var(--shell-fg);
+  border-radius: 12px; padding: 10px 12px; cursor: pointer; font: 700 14px/1.3 var(--font);
+}
+.tries button small { display: block; font-weight: 600; color: var(--shell-muted); font-size: 12.5px; }
+.tries button[aria-current="true"] { border-color: var(--shell-accent); box-shadow: inset 3px 0 0 var(--shell-accent); }
+.tries button::after { content: "›"; font-size: 20px; color: var(--shell-muted); }
+.note { font-size: 13px; line-height: 1.5; color: var(--shell-muted); margin: 0; }
+.note strong { color: var(--shell-fg); }
+.reset { align-self: flex-start; border: 0; background: none; padding: 0; cursor: pointer; font: 700 13px var(--font); color: var(--shell-accent); text-decoration: underline; }
+button:focus-visible { outline: 3px solid var(--shell-accent); outline-offset: 2px; }
+
+.stage { min-width: 0; display: flex; justify-content: center; align-items: flex-start; }
+.device-slot { position: relative; }
+.device { position: absolute; top: 0; left: 0; transform-origin: top left; }
+
+/* Device bodies */
+.bezel { position: relative; box-sizing: border-box; box-shadow: 0 30px 70px rgba(30, 32, 70, 0.28); }
+.device[data-device="iphone"] .bezel { padding: 12px; border-radius: 58px; background: #1b1b21; }
+.device[data-device="iphone"] .screen { width: 390px; height: 844px; border-radius: 46px; }
+.device[data-device="android"] .bezel { padding: 10px; border-radius: 42px; background: #24262c; }
+.device[data-device="android"] .screen { width: 412px; height: 915px; border-radius: 32px; }
+.device[data-device="desktop"] .bezel { padding: 0; border-radius: 16px; background: #f3f4fa; overflow: hidden; }
+.device[data-device="desktop"] .screen { width: 1280px; height: 800px; border-radius: 0; }
+.chrome { display: none; height: 44px; align-items: center; gap: 8px; padding: 0 16px; border-bottom: 1px solid #e1e4f5; }
+.device[data-device="desktop"] .chrome { display: flex; }
+.chrome i { width: 12px; height: 12px; border-radius: 50%; background: #c8cadf; }
+.chrome span { margin: 0 auto; width: 420px; height: 28px; border-radius: 14px; background: #fff; border: 1px solid #e1e4f5;
+  display: flex; align-items: center; justify-content: center; font: 700 13px var(--font); color: #5c5f86; }
+.cutout { position: absolute; z-index: 50; pointer-events: none; background: #0b0b0e; display: none; }
+.device[data-device="iphone"] .cutout { display: block; top: 22px; left: 50%; width: 112px; height: 32px; border-radius: 16px; transform: translateX(-50%); }
+.device[data-device="android"] .cutout { display: block; top: 22px; left: 50%; width: 16px; height: 16px; border-radius: 50%; transform: translateX(-50%); }
+
+/* The app's own viewport: fixed elements (bottom nav) pin to the screen, the page scrolls inside it. */
+.screen { position: relative; overflow: hidden; transform: translateZ(0); background: #eef1ff; }
+.app-scroll { height: 100%; overflow-y: auto; overscroll-behavior: contain; container-type: size; container-name: app; font-family: var(--font); scrollbar-width: thin; }
+.device[data-device="iphone"] .app-scroll .topbar,
+.device[data-device="android"] .app-scroll .topbar { padding-top: 44px; }
+
+/* Phone-sized viewers: no frame, the app simply fills the space. */
+@media (max-width: 720px) {
+  .shell { grid-template-columns: minmax(0, 1fr); gap: 16px; padding-block: 12px; }
+  .panel { position: static; gap: 14px; }
+  .panel h1 { font-size: 28px; }
+  .device-pick, .tries-wrap, .panel .note.long { display: none; }
+  .device-slot { width: 100% !important; height: auto !important; }
+  .device { position: static; transform: none !important; }
+  .bezel { padding: 0 !important; border-radius: 22px !important; background: none !important; box-shadow: 0 10px 30px rgba(30, 32, 70, 0.2); overflow: hidden; }
+  .screen { width: 100% !important; height: min(820px, calc(100dvh - 120px)) !important; border-radius: 22px !important; }
+  .chrome, .cutout { display: none !important; }
+  .app-scroll .topbar { padding-top: 12px !important; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+
+/* ---------- the app's own stylesheet (app/globals.css, adapted by mock/build.mjs) ---------- */
+/*APP_CSS*/
+</style>
+
+<div class="shell">
+  <aside class="panel" aria-label="Prototipa vadība">
+    <div>
+      <h1>Cipariņi</h1>
+      <p class="lede">Klikšķināms prototips: īstās lietotnes ekrāni, modeļi un uzdevumi. Spied visu, ko redzi ekrānā.</p>
+    </div>
+    <div class="device-pick">
+      <p class="eyebrow" id="device-label">Ierīce</p>
+      <div class="seg" role="group" aria-labelledby="device-label">
+        <button type="button" id="dev-iphone" data-device="iphone" aria-pressed="true">iPhone</button>
+        <button type="button" id="dev-android" data-device="android" aria-pressed="false">Android</button>
+        <button type="button" id="dev-desktop" data-device="desktop" aria-pressed="false">Dators</button>
+      </div>
+    </div>
+    <div class="tries-wrap">
+      <p class="eyebrow">Ko izmēģināt</p>
+      <div class="tries">
+        <button type="button" data-go="/"><span>Sākums<small>Klases izvēle, valoda LV / RU</small></span></button>
+        <button type="button" data-go="/klase/8/pitagors"><span>Pitagora teorēma<small>Modelis, uzdevums, Cipariņš</small></span></button>
+        <button type="button" data-go="/klase/6/koordinatas"><span>Koordinātu plakne<small>6. klase, Skola2030 6.2.1</small></span></button>
+        <button type="button" data-go="/klase/9/kvadratvienadojumi"><span>Parabola<small>9. klase, slīdņi a, b, c</small></span></button>
+        <button type="button" data-go="/chat"><span>AI čats<small>Jautā Cipariņam</small></span></button>
+      </div>
+    </div>
+    <p class="note long"><strong>Cipariņš atbild pa īstam:</strong> jautājumus nosūta uz Claude ar tava Claude konta lietojumu. Pirmajā reizē tiks prasīta atļauja. Ja to nedod, redzēsi demo atbildi.</p>
+    <p class="note">Zvaigznes un valoda glabājas tikai šajā pārlūkā.</p>
+    <button type="button" class="reset" id="reset">Sākt no jauna</button>
+  </aside>
+
+  <main class="stage" id="stage">
+    <div class="device-slot" id="slot">
+      <div class="device" id="device" data-device="iphone">
+        <div class="bezel">
+          <div class="chrome" aria-hidden="true"><i></i><i></i><i></i><span>[jūsu projekts].vercel.app</span></div>
+          <div class="screen">
+            <div class="app-scroll" id="app-scroll"><div id="app" class="app-root"></div></div>
+          </div>
+          <div class="cutout" aria-hidden="true"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
+<script>/*APP_JS*/</script>
+<script>
+(() => {
+  const device = document.getElementById("device");
+  const slot = document.getElementById("slot");
+  const stage = document.getElementById("stage");
+  const SIZE = { iphone: [414, 868], android: [432, 935], desktop: [1280, 844] };
+  const store = {
+    get(k) { try { return localStorage.getItem(k); } catch { return null; } },
+    set(k, v) { try { localStorage.setItem(k, v); } catch {} },
+  };
+
+  function fit() {
+    const [w, h] = SIZE[device.dataset.device];
+    if (window.matchMedia("(max-width: 720px)").matches) { slot.style.width = ""; slot.style.height = ""; return; }
+    const availW = stage.clientWidth;
+    const availH = window.innerHeight - 48;
+    const scale = Math.min(1, availW / w, availH / h);
+    device.style.transform = `scale(${scale})`;
+    slot.style.width = `${w * scale}px`;
+    slot.style.height = `${h * scale}px`;
+  }
+
+  function setDevice(name) {
+    device.dataset.device = name;
+    document.querySelectorAll(".seg button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.device === name)));
+    store.set("ciparini.mock.device", name);
+    fit();
+  }
+
+  document.querySelectorAll(".seg button").forEach((b) => b.addEventListener("click", () => setDevice(b.dataset.device)));
+  document.querySelectorAll("[data-go]").forEach((b) =>
+    b.addEventListener("click", () => window.ciparini && window.ciparini.navigate(b.dataset.go)),
+  );
+  document.addEventListener("ciparini:navigate", (e) => {
+    document.querySelectorAll("[data-go]").forEach((b) => b.setAttribute("aria-current", String(b.dataset.go === e.detail)));
+  });
+  document.getElementById("reset").addEventListener("click", () => {
+    try { localStorage.removeItem("ciparini.progress"); localStorage.removeItem("ciparini.lang"); } catch {}
+    location.reload();
+  });
+
+  const saved = store.get("ciparini.mock.device");
+  setDevice(saved && SIZE[saved] ? saved : "iphone");
+  document.querySelector('[data-go="/"]').setAttribute("aria-current", "true");
+  new ResizeObserver(fit).observe(stage);
+  window.addEventListener("resize", fit);
+})();
+</script>
