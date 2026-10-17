@@ -1293,7 +1293,7 @@ input[type="range"]::-moz-range-thumb {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  max-height: 360px;
+  max-height: min(60vh, 520px);
   overflow-y: auto;
 }
 
