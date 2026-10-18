@@ -1462,6 +1462,7 @@ input[type="range"]::-moz-range-thumb {
 }
 
 .chat-scroll {
+  position: relative;
   flex: 1;
   overflow-y: auto;
   padding: 16px var(--gutter);
@@ -1624,6 +1625,11 @@ input[type="range"]::-moz-range-thumb {
   transition-duration: 300ms;
 }
 
+/* While a sheet is open the page gets room to scroll its content above it. */
+.page:has(> .sheet) {
+  padding-bottom: 70vh;
+}
+
 .sheet-grabber {
   flex: none;
   display: grid;
@@ -1672,6 +1678,7 @@ input[type="range"]::-moz-range-thumb {
 }
 
 .exercise-tutor-scroll {
+  position: relative;
   flex: 1;
   min-height: 0;
   overflow-y: auto;

@@ -9,7 +9,7 @@ import { BottomNav, TopBar } from "./Chrome";
 import { Icon } from "./Icon";
 import { Mascot } from "./Mascot";
 import { Messages, RichText } from "./chat/Messages";
-import { useTutorChat } from "./chat/useTutorChat";
+import { useScrollToLatestQuestion, useTutorChat } from "./chat/useTutorChat";
 
 const STARTERS: T[] = [
   { lv: "Kāpēc man vispār vajag matemātiku?", ru: "Зачем мне вообще нужна математика?" },
@@ -39,9 +39,7 @@ export function ChatView() {
     }
   }, [params]);
 
-  useEffect(() => {
-    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
-  }, [messages]);
+  useScrollToLatestQuestion(scrollRef, messages);
 
   const send = (text: string) => {
     if (!text.trim() || busy) return;

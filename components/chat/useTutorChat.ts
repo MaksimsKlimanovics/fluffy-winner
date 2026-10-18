@@ -84,3 +84,22 @@ export function useTutorChat({ grade, topicId, exercise }: Context) {
 
   return { messages, busy, send, reset };
 }
+
+/**
+ * Keeps the start of a new answer in view: when a turn is added, scroll so
+ * the child's latest message sits at the top, instead of following the
+ * stream to the bottom and leaving the beginning of a long answer off-screen.
+ */
+export function useScrollToLatestQuestion(scrollRef: React.RefObject<HTMLElement | null>, messages: Msg[]) {
+  const count = useRef(0);
+  useEffect(() => {
+    if (messages.length === count.current) return;
+    count.current = messages.length;
+    const box = scrollRef.current;
+    const asked = box?.querySelectorAll<HTMLElement>(".msg.user");
+    const last = asked?.[asked.length - 1];
+    if (!box || !last) return;
+    const calm = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    box.scrollTo({ top: last.offsetTop - 8, behavior: calm ? "auto" : "smooth" });
+  }, [messages, scrollRef]);
+}

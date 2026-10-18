@@ -49,6 +49,17 @@ export function ExerciseCard({
 
   useEffect(next, [next]);
 
+  // The sheet covers the lower part of the screen: once it is open (and the page has
+  // room to scroll), bring the question up into view above it.
+  useEffect(() => {
+    if (!showTutor) return;
+    const calm = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const id = requestAnimationFrame(() =>
+      cardRef.current?.scrollIntoView({ block: "start", behavior: calm ? "auto" : "smooth" }),
+    );
+    return () => cancelAnimationFrame(id);
+  }, [showTutor]);
+
   // The tutor reads this at send time, so it always sees the latest state.
   const contextRef = useRef<ExerciseContext | null>(null);
   contextRef.current = task && {
@@ -171,12 +182,7 @@ export function ExerciseCard({
         <button
           ref={tutorButtonRef}
           className={`btn ${showTutor ? "tutor-on" : "ghost"}`}
-          onClick={() => {
-            // The sheet takes the lower part of the screen: keep the question in view above it.
-            const calm = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-            cardRef.current?.scrollIntoView({ block: "start", behavior: calm ? "auto" : "smooth" });
-            setShowTutor(true);
-          }}
+          onClick={() => setShowTutor(true)}
           aria-haspopup="dialog"
           aria-expanded={showTutor}
         >

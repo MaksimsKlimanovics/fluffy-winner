@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { type T, UI } from "@/lib/i18n";
 import type { ExerciseContext } from "@/lib/tutor";
 import { useApp } from "../AppProvider";
@@ -8,7 +8,7 @@ import { Icon } from "../Icon";
 import { Mascot } from "../Mascot";
 import { Sheet } from "../Sheet";
 import { Messages } from "./Messages";
-import { useTutorChat } from "./useTutorChat";
+import { useScrollToLatestQuestion, useTutorChat } from "./useTutorChat";
 
 const ACTIONS: Record<"start" | "explain" | "mistake" | "why", T> = {
   start: { lv: "Ar ko sākt?", ru: "С чего начать?" },
@@ -47,9 +47,7 @@ export function ExerciseTutor({
   const [input, setInput] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
-  }, [messages]);
+  useScrollToLatestQuestion(scrollRef, messages);
 
   const ask = (text: string) => {
     if (!text.trim() || busy) return;
