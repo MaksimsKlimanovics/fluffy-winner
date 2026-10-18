@@ -6,6 +6,7 @@ import type { ExerciseContext } from "@/lib/tutor";
 import { useApp } from "../AppProvider";
 import { Icon } from "../Icon";
 import { Mascot } from "../Mascot";
+import { persona, personaUI } from "@/lib/persona";
 import { Sheet } from "../Sheet";
 import { Messages } from "./Messages";
 import { useScrollToLatestQuestion, useTutorChat } from "./useTutorChat";
@@ -18,7 +19,7 @@ const ACTIONS: Record<"start" | "explain" | "mistake" | "why", T> = {
 };
 
 /**
- * Cipariņš for the exercise on screen, in a bottom sheet. It knows the exact
+ * The grade's helper (Cipariņš … Cipara kungs) for the exercise on screen, in a bottom sheet. It knows the exact
  * task (the server rebuilds it from the seed), the child's wrong attempts and
  * whether they already solved it, so "explain the solution" is about *this* task.
  */
@@ -45,6 +46,8 @@ export function ExerciseTutor({
   const { t } = useApp();
   const { messages, busy, send } = useTutorChat({ grade, topicId, exercise: getContext });
   const [input, setInput] = useState("");
+  const helper = persona(grade);
+  const helperUI = personaUI(helper);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useScrollToLatestQuestion(scrollRef, messages);
@@ -62,13 +65,13 @@ export function ExerciseTutor({
   ];
 
   return (
-    <Sheet host={host} label={t({ lv: "Cipariņš palīdz ar uzdevumu", ru: "Ципариньш помогает с задачей" })} onClose={onClose}>
+    <Sheet host={host} label={t(helperUI.helps)} onClose={onClose}>
       {({ grab, close }) => (
         <div className="exercise-tutor" style={{ "--c": color } as React.CSSProperties}>
           <div className="exercise-tutor-head" {...grab}>
-            <Mascot size={40} color={color} mood={busy ? "thinking" : "happy"} />
+            <Mascot size={40} color={color} grade={grade} mood={busy ? "thinking" : "happy"} />
             <div>
-              <strong>Cipariņš</strong>
+              <strong>{t(helper.name)}</strong>
               <small>{t({ lv: "Redzu tavu uzdevumu un mēģinājumus", ru: "Вижу твою задачу и попытки" })}</small>
             </div>
             <button type="button" className="icon-btn small" onClick={close} aria-label={t({ lv: "Aizvērt", ru: "Закрыть" })}>
@@ -121,7 +124,7 @@ export function ExerciseTutor({
               <Icon name="send" size={20} />
             </button>
           </form>
-          <p className="disclaimer">{t(UI.aiDisclaimer)}</p>
+          <p className="disclaimer">{t(helperUI.aiDisclaimer)}</p>
         </div>
       )}
     </Sheet>

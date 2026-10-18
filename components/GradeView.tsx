@@ -9,6 +9,7 @@ import { useApp } from "./AppProvider";
 import { BottomNav, TopBar } from "./Chrome";
 import { Icon } from "./Icon";
 import { Mascot } from "./Mascot";
+import { persona } from "@/lib/persona";
 
 const KIND_LABEL: Record<string, T> = {
   algebra: { lv: "Aritmētika un algebra", ru: "Арифметика и алгебра" },
@@ -33,8 +34,11 @@ export function GradeView({ grade }: { grade: number }) {
             </p>
             <h1 data-large-title>{t(g.title)}</h1>
             <p className="subtitle">{t(g.subtitle)}</p>
+            <p className="helper-line">
+              {t({ lv: "Tavs palīgs", ru: "Твой помощник" })}: <strong>{t(persona(g.grade).name)}</strong>
+            </p>
           </div>
-          <Mascot size={76} color={g.color} mood="cheer" />
+          <Mascot size={76} color={g.color} grade={g.grade} mood="cheer" />
         </header>
 
         <section className="group">

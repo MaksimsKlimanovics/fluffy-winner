@@ -22,6 +22,21 @@
 как в них работает математика» (по духу как Фиксики, но собственный персонаж — без чужих
 торговых марок).
 
+### Palīgs aug kopā ar bērnu
+
+Ar katru klasi tēls kļūst vecāks — mainās vārds, izskats, sveiciens un AI runas veids (`lib/persona.ts`):
+
+| Klase | Vārds | Izskats |
+|---|---|---|
+| 1. | Cipariņš | mazs, apaļš, lielas acis, nekā rokās |
+| 2.–3. | Cipariņš | zīmulis, 3. klasē arī mugursoma |
+| 4.–5. | Cipars | lineāls un mugursoma |
+| 6. | Cipars | cirkulis un brilles |
+| 7.–8. | Cipara jaunskungs | brilles un cirkulis, 8. klasē arī tauriņš |
+| 9. | Cipara kungs | cilindrs, monoklis, ūsas, tauriņš un spieķis |
+
+Ķermenis ar katru gadu kļūst garāks, acis un vaigi mazāk bērnišķīgi, uz vēdera ir klases cipars. Katrai klasei ir savs AI runas stils (`VOICES`): no īsiem, rotaļīgiem teikumiem 1. klasē līdz pieklājīgam, precīzam „kolēģim“, kas 9. klasē gatavo eksāmenam. Bez izvēlētas klases (sākumlapā, vispārējā čatā) palīgs ir mazais Cipariņš.
+
 ## Atbilstība Skola2030 / Соответствие Skola2030
 
 Pamatā ir saistošais dokuments — **MK 27.11.2018. noteikumi Nr. 747, 6. pielikums** “Sasniedzamie rezultāti matemātikas mācību jomā, beidzot 3., 6. un 9. klasi” ([likumi.lv](https://likumi.lv/ta/id/303768)).
@@ -97,7 +112,7 @@ app/
   api/chat/route.ts              потоковый прокси к Claude
 components/
   HomeView, GradeView, TopicView, ChatView, ExerciseCard
-  Mascot.tsx                     персонаж Cipariņš (SVG)
+  Mascot.tsx                     персонаж Cipariņš … Cipara kungs (SVG, по классу)
   Scenes.tsx                     иллюстрации в стиле референсов
   widgets/                       16 интерактивных моделей
 lib/

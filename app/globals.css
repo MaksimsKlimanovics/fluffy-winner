@@ -462,6 +462,14 @@ h3 {
   font: var(--t-callout);
   color: var(--label-2);
 }
+.helper-line {
+  margin: 4px 0 0;
+  font: var(--t-subhead);
+  color: var(--label-2);
+}
+.helper-line strong {
+  color: var(--c-text);
+}
 
 .title-icon {
   flex: none;
@@ -857,6 +865,12 @@ a.row:active {
   opacity: 0.16;
 }
 
+.grade-mascot {
+  position: absolute;
+  top: 8px;
+  right: 6px;
+  pointer-events: none;
+}
 .grade-num {
   font: var(--t-large);
   font-weight: 800;

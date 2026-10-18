@@ -8,6 +8,7 @@ import { useApp } from "./AppProvider";
 import { BottomNav, TopBar } from "./Chrome";
 import { Icon } from "./Icon";
 import { Mascot } from "./Mascot";
+import { persona, personaUI } from "@/lib/persona";
 import { Messages, RichText } from "./chat/Messages";
 import { useScrollToLatestQuestion, useTutorChat } from "./chat/useTutorChat";
 
@@ -48,6 +49,8 @@ export function ChatView() {
   };
 
   const color = g?.color ?? "#5b5bf7";
+  const helper = persona(g?.grade);
+  const helperUI = personaUI(helper);
 
   return (
     <div className="page chat-page" style={{ "--c": color } as React.CSSProperties}>
@@ -56,9 +59,9 @@ export function ChatView() {
         backLabel={topic ? t(topic.title) : t(UI.home)}
       />
       <div className="chat-head">
-        <Mascot size={52} color={color} mood={busy ? "thinking" : "happy"} />
+        <Mascot size={52} color={color} grade={g?.grade} mood={busy ? "thinking" : "happy"} />
         <div>
-          <strong>{t(UI.chatTitle)}</strong>
+          <strong>{t(helperUI.chatTitle)}</strong>
           {topic && g && (
             <small>
               {t(UI.chatContext)}: {g.grade}. {t(UI.grade)} · {topic.icon} {t(topic.title)}
@@ -77,7 +80,7 @@ export function ChatView() {
 
       <div className="chat-scroll" ref={scrollRef} aria-live="polite">
         <div className="msg assistant">
-          <RichText text={t(UI.chatHello)} />
+          <RichText text={t(helper.hello)} />
         </div>
         {messages.length === 0 && (
           <div className="starters">
@@ -90,7 +93,7 @@ export function ChatView() {
           </div>
         )}
         <Messages messages={messages} />
-        <p className="disclaimer">{t(UI.aiDisclaimer)}</p>
+        <p className="disclaimer">{t(helperUI.aiDisclaimer)}</p>
       </div>
 
       <form

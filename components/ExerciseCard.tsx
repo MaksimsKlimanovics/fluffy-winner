@@ -7,6 +7,7 @@ import type { ExerciseContext } from "@/lib/tutor";
 import { useApp } from "./AppProvider";
 import { Icon } from "./Icon";
 import { Mascot } from "./Mascot";
+import { persona, personaUI } from "@/lib/persona";
 import { ExerciseTutor } from "./chat/ExerciseTutor";
 
 type Status = "idle" | "correct" | "wrong";
@@ -147,7 +148,7 @@ export function ExerciseCard({
 
       {status === "correct" && (
         <div className="feedback ok" role="status">
-          <Mascot size={44} mood="cheer" color={color} /> {t(UI.correct)}
+          <Mascot size={44} mood="cheer" color={color} grade={grade} /> {t(UI.correct)}
           {!showSolution && <Icon name="star" size={18} filled className="star-earned" label={t(UI.stars)} />}
         </div>
       )}
@@ -186,7 +187,7 @@ export function ExerciseCard({
           aria-haspopup="dialog"
           aria-expanded={showTutor}
         >
-          <Icon name="bubble" size={18} /> {t(UI.askAi)}
+          <Icon name="bubble" size={18} /> {t(personaUI(persona(grade)).askAi)}
         </button>
         <button className="btn primary" onClick={next}>
           <Icon name="refresh" size={18} /> {t(UI.newTask)}

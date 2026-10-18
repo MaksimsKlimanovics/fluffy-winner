@@ -38,15 +38,8 @@ export const UI = {
   correct: { lv: "Pareizi! Malacis!", ru: "Правильно! Молодец!" },
   wrong: { lv: "Vēl nav. Pamēģini vēlreiz!", ru: "Пока нет. Попробуй ещё раз!" },
   yourAnswer: { lv: "Tava atbilde", ru: "Твой ответ" },
-  askAi: { lv: "Jautāt Cipariņam", ru: "Спросить Ципариньша" },
-  askAiAbout: { lv: "Nesaprati? Jautā Cipariņam!", ru: "Не понял? Спроси Ципариньша!" },
-  chatTitle: { lv: "Cipariņš — tavs AI palīgs", ru: "Ципариньш — твой AI-помощник" },
   chatPlaceholder: { lv: "Uzraksti savu jautājumu…", ru: "Напиши свой вопрос…" },
   send: { lv: "Sūtīt", ru: "Отправить" },
-  chatHello: {
-    lv: "Sveiks! Es esmu Cipariņš. Palīdzēšu saprast jebkuru matemātikas uzdevumu — nevis vienkārši pateikšu atbildi, bet kopā izdomāsim. Ko pētām?",
-    ru: "Привет! Я Ципариньш. Помогу разобраться с любой задачей по математике — не просто скажу ответ, а мы вместе додумаемся. Что изучаем?",
-  },
   chatError: {
     lv: "Hmm, savienojums pazuda. Pamēģini vēlreiz pēc brīža.",
     ru: "Хм, связь пропала. Попробуй ещё раз чуть позже.",
@@ -58,10 +51,6 @@ export const UI = {
   home: { lv: "Sākums", ru: "Главная" },
   chat: { lv: "AI čats", ru: "AI-чат" },
   suggestions: { lv: "Piemēram:", ru: "Например:" },
-  aiDisclaimer: {
-    lv: "Cipariņš ir mākslīgais intelekts un var kļūdīties. Pārbaudi svarīgas atbildes kopā ar skolotāju vai vecākiem.",
-    ru: "Ципариньш — искусственный интеллект и может ошибаться. Проверяй важные ответы вместе с учителем или родителями.",
-  },
   notFound: { lv: "Šāda lapa nav atrasta", ru: "Такая страница не найдена" },
   standardOriginal: {
     lv: "Citāts no pamatizglītības standarta.",

@@ -8,6 +8,9 @@ import { useApp } from "./AppProvider";
 import { BottomNav, TopBar } from "./Chrome";
 import { Icon } from "./Icon";
 import { Mascot } from "./Mascot";
+import { persona, personaUI } from "@/lib/persona";
+
+const helperUI = personaUI(persona());
 import { BooksScene, BusScene, CityScene } from "./Scenes";
 
 const SLIDES: { scene: React.ReactNode; title: T; text: T }[] = [
@@ -97,6 +100,7 @@ export function HomeView() {
                 className="grade-card"
                 style={{ "--c": g.color } as React.CSSProperties}
               >
+                <Mascot size={44} color={g.color} grade={g.grade} className="grade-mascot" />
                 <span className="grade-num">{g.grade}.</span>
                 <span className="grade-label">{t(UI.grade)}</span>
                 <strong>{t(g.title)}</strong>
@@ -112,8 +116,8 @@ export function HomeView() {
         <Link href="/chat" className="cta-chat">
           <Mascot size={56} mood="thinking" color="#f72585" />
           <span>
-            <strong>{t(UI.askAi)}</strong>
-            <small>{t(UI.askAiAbout)}</small>
+            <strong>{t(helperUI.askAi)}</strong>
+            <small>{t(helperUI.askAiAbout)}</small>
           </span>
           <Icon name="chevronRight" size={22} className="cta-arrow" />
         </Link>

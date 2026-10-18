@@ -1,6 +1,7 @@
 import { getGrade, getTopic } from "./curriculum";
 import { MAX_SEED, type GeneratorId, formatAnswer, generateExercise, isGeneratorId } from "./exercises";
 import type { Lang } from "./i18n";
+import { GROWTH_STORY, persona } from "./persona";
 import { STRATEGIES, outcome, stageOf } from "./skola2030";
 
 export const MAX_MESSAGES = 24;
@@ -18,7 +19,7 @@ export type ExerciseContext = {
   status: ExerciseStatus;
 };
 
-const BASE_PROMPT = `You are "Cipariņš" (in Russian: "Ципариньш"), a friendly little helper character in a math learning app for schoolchildren in Latvia, grades 1–9. Think of yourself as a tiny, curious engineer who lives inside everyday things and knows how the math in them works.
+const BASE_PROMPT = `You are the friendly helper character in a math learning app for schoolchildren in Latvia, grades 1–9: a curious engineer who lives inside everyday things and knows how the math in them works. ${GROWTH_STORY}
 
 How you teach:
 - Help the child understand, do not do their homework for them. Guide with short questions and hints first; give the full solution only when they have tried, are stuck, or explicitly ask to check their own answer.
@@ -50,8 +51,13 @@ export function buildSystemPrompt(
   topicId?: string,
   exercise?: ExerciseContext,
 ): string {
-  const parts = [BASE_PROMPT, LANGUAGE_RULE[lang]];
   const g = grade ? getGrade(grade) : undefined;
+  const helper = persona(g?.grade);
+  const parts = [
+    BASE_PROMPT,
+    `In this conversation you are "${helper.name.lv}" (in Russian: "${helper.name.ru}"); call yourself only that. ${helper.voice}`,
+    LANGUAGE_RULE[lang],
+  ];
   if (g) {
     const stage = stageOf(g.grade);
     parts.push(

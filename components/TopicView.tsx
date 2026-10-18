@@ -9,6 +9,7 @@ import { BottomNav, TopBar } from "./Chrome";
 import { ExerciseCard } from "./ExerciseCard";
 import { Icon } from "./Icon";
 import { MascotSays } from "./Mascot";
+import { persona, personaUI } from "@/lib/persona";
 import { Skola2030Box } from "./Skola2030Box";
 import { Widget } from "./widgets";
 
@@ -18,6 +19,7 @@ export function TopicView({ grade, topicId }: { grade: number; topicId: string }
   const topic = getTopic(grade, topicId)!;
   const idx = g.topics.findIndex((x) => x.id === topicId);
   const nextTopic = g.topics[idx + 1];
+  const helperUI = personaUI(persona(grade));
 
   return (
     <div className="page" style={{ "--c": g.color, "--on-c": readableOn(g.color) } as React.CSSProperties}>
@@ -39,7 +41,7 @@ export function TopicView({ grade, topicId }: { grade: number; topicId: string }
 
         <section className="block">
           <h2>{t(UI.why)}</h2>
-          <MascotSays color={g.color}>{t(topic.why)}</MascotSays>
+          <MascotSays color={g.color} grade={g.grade}>{t(topic.why)}</MascotSays>
         </section>
 
         <section className="block real-case">
@@ -79,7 +81,7 @@ export function TopicView({ grade, topicId }: { grade: number; topicId: string }
         </section>
 
         <section className="group">
-          <h2 className="group-header">{t(UI.askAiAbout)}</h2>
+          <h2 className="group-header">{t(helperUI.askAiAbout)}</h2>
           <ul className="list">
             {topic.askAi.map((q, i) => (
               <li key={i}>
@@ -93,7 +95,7 @@ export function TopicView({ grade, topicId }: { grade: number; topicId: string }
             <li>
               <Link className="row tinted" href={`/chat?grade=${grade}&topic=${topicId}`}>
                 <Icon name="sparkles" size={20} className="row-glyph" />
-                <span className="row-text">{t(UI.askAi)}</span>
+                <span className="row-text">{t(helperUI.askAi)}</span>
                 <Icon name="chevronRight" size={18} className="chevron" />
               </Link>
             </li>
