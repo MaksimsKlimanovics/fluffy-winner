@@ -36,6 +36,13 @@ Pamatā ir saistošais dokuments — **MK 27.11.2018. noteikumi Nr. 747, 6. piel
 - Cipariņš saņem tēmas rezultātus, posma robežas un standartā nosauktās problēmrisināšanas stratēģijas (“mēģinu un pārbaudu”, “spriežu no beigām”, “pāreja uz vienkāršāku problēmu”) un skaidro pēc matemātiskās modelēšanas cikla (2.2).
 - Tēmu sadalījums pa klasēm **posma iekšienē** ir mūsu (programmas parauga VISC PDF nebija pieejams). Ja ir programmas paraugs, sadalījumu var precizēt, nemainot atsauces uz standartu.
 
+## Dizains: Apple HIG + Emil Kowalski / Дизайн
+
+- **Apple Human Interface Guidelines:** sistēmas krāsas un grupēti foni, Dark Mode, teksta stili `rem` vienībās (Safari seko iOS Dynamic Type ar `-apple-system-body`), SF Pro Rounded (`ui-rounded`) Apple ierīcēs ar Nunito kā rezerves fontu, caurspīdīgas navigācijas un cilņu joslas, Large Title, kas ritinot pāriet joslā, iOS grupēti saraksti, segmentētā vadīkla, iOS stila slīdnis, „sheet“ panelis Cipariņam, 44 pt pieskāriena laukumi, `safe-area` atkāpes.
+- **Emil Kowalski kustības standarti** ([STANDARDS.md](https://github.com/emilkowalski/skills/blob/main/skills/review-animations/STANDARDS.md)): `cubic-bezier(0.23, 1, 0.32, 1)` / zīmēšanas līkne `cubic-bezier(0.32, 0.72, 0, 1)`, nospiešana `scale(0.97)` 160 ms, UI kustība < 300 ms, tikai `transform`/`opacity`, ienākšana ar `@starting-style`, panelis aizveras ar ātru pavilkšanu (> 0,11 px/ms), hover tikai `(hover: hover) and (pointer: fine)`, bieži lietotas darbības netiek animētas, samazinātas kustības režīmā paliek tikai izgaišana.
+- **Bērnu slānis paliek:** klašu krāsas, Cipariņš, ilustrācijas. Krāsains teksts tiek sajaukts ar teksta krāsu (`color-mix`), lai sasniegtu kontrastu; teksts uz klases krāsas tiek izvēlēts automātiski (`lib/color.ts`).
+- Visa sistēma ir `app/globals.css` sākumā (tokeni) — komponentēs nav cietu krāsu, izņemot zīmējumus uz „papīra“ fona.
+
 ## Стек
 
 - **Next.js 16** (App Router) + React 19 + TypeScript — все страницы тем статически генерируются

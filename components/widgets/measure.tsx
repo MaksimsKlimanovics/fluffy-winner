@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useApp } from "../AppProvider";
+import { Icon } from "../Icon";
 import { Readout, Slider, type WidgetProps, fmt } from "./shared";
 
 export function AreaGrid({ color, grade }: WidgetProps) {
@@ -336,7 +337,7 @@ export function Balance({ color }: WidgetProps) {
           setX(0);
         }}
       >
-        ⚖️ {t({ lv: "Cits vienādojums", ru: "Другое уравнение" })}
+        <Icon name="refresh" size={16} /> {t({ lv: "Cits vienādojums", ru: "Другое уравнение" })}
       </button>
     </div>
   );

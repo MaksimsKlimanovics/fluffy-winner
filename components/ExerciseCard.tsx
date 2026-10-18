@@ -5,6 +5,7 @@ import { type Exercise, type GeneratorId, checkAnswer, formatAnswer, generateExe
 import { UI } from "@/lib/i18n";
 import type { ExerciseContext } from "@/lib/tutor";
 import { useApp } from "./AppProvider";
+import { Icon } from "./Icon";
 import { Mascot } from "./Mascot";
 import { ExerciseTutor } from "./chat/ExerciseTutor";
 
@@ -32,6 +33,8 @@ export function ExerciseCard({
   const [showHint, setShowHint] = useState(false);
   const [showSolution, setShowSolution] = useState(false);
   const [showTutor, setShowTutor] = useState(false);
+  const cardRef = useRef<HTMLDivElement>(null);
+  const tutorButtonRef = useRef<HTMLButtonElement>(null);
   const [streak, setStreak] = useState(0);
 
   const next = useCallback(() => {
@@ -76,12 +79,12 @@ export function ExerciseCard({
   };
 
   return (
-    <div className={`exercise status-${status}`} style={{ "--c": color } as React.CSSProperties}>
+    <div ref={cardRef} className={`exercise status-${status}`} style={{ "--c": color } as React.CSSProperties}>
       <div className="exercise-head">
         <span className="badge">{t(UI.practice)}</span>
         {streak > 1 && (
           <span className="streak">
-            🔥 {streak} {t(UI.streak)}
+            <Icon name="sparkles" size={16} /> {streak} {t(UI.streak)}
           </span>
         )}
       </div>
@@ -133,7 +136,8 @@ export function ExerciseCard({
 
       {status === "correct" && (
         <div className="feedback ok" role="status">
-          <Mascot size={44} mood="cheer" color={color} /> {t(UI.correct)} {!showSolution && "⭐"}
+          <Mascot size={44} mood="cheer" color={color} /> {t(UI.correct)}
+          {!showSolution && <Icon name="star" size={18} filled className="star-earned" label={t(UI.stars)} />}
         </div>
       )}
       {status === "wrong" && (
@@ -144,19 +148,19 @@ export function ExerciseCard({
 
       {showHint && (
         <div className="hint">
-          💡 <strong>{t(UI.hint)}:</strong> {t(ex.hint)}
+          <Icon name="lightbulb" size={18} /> <span><strong>{t(UI.hint)}:</strong> {t(ex.hint)}</span>
         </div>
       )}
       {showSolution && (
         <div className="solution">
-          ✅ {t(ex.solution)} → <strong>{formatAnswer(ex)}</strong>
+          <Icon name="checkmark" size={18} /> <span>{t(ex.solution)} → <strong>{formatAnswer(ex)}</strong></span>
         </div>
       )}
 
       <div className="exercise-actions">
         {!showHint && (
           <button className="btn ghost" onClick={() => setShowHint(true)}>
-            💡 {t(UI.hint)}
+            <Icon name="lightbulb" size={18} /> {t(UI.hint)}
           </button>
         )}
         {!showSolution && (attempts.length >= 2 || status === "correct") && (
@@ -165,18 +169,25 @@ export function ExerciseCard({
           </button>
         )}
         <button
+          ref={tutorButtonRef}
           className={`btn ${showTutor ? "tutor-on" : "ghost"}`}
-          onClick={() => setShowTutor((v) => !v)}
+          onClick={() => {
+            // The sheet takes the lower part of the screen: keep the question in view above it.
+            const calm = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+            cardRef.current?.scrollIntoView({ block: "start", behavior: calm ? "auto" : "smooth" });
+            setShowTutor(true);
+          }}
+          aria-haspopup="dialog"
           aria-expanded={showTutor}
         >
-          💬 {t(UI.askAi)}
+          <Icon name="bubble" size={18} /> {t(UI.askAi)}
         </button>
         <button className="btn primary" onClick={next}>
-          {t(UI.newTask)} ↻
+          <Icon name="refresh" size={18} /> {t(UI.newTask)}
         </button>
       </div>
 
-      {showTutor && (
+      {showTutor && cardRef.current?.closest<HTMLElement>(".page") && (
         // Keyed by seed: a new exercise starts a fresh conversation.
         <ExerciseTutor
           key={seed}
@@ -186,7 +197,11 @@ export function ExerciseCard({
           getContext={getContext}
           hasWrongAttempts={attempts.length > 0}
           solved={status === "correct"}
-          onClose={() => setShowTutor(false)}
+          host={cardRef.current.closest<HTMLElement>(".page")!}
+          onClose={() => {
+            setShowTutor(false);
+            tutorButtonRef.current?.focus({ preventScroll: true });
+          }}
         />
       )}
     </div>

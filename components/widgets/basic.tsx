@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useApp } from "../AppProvider";
+import { Icon } from "../Icon";
 import { Readout, Slider, type WidgetProps, fmt } from "./shared";
 
 export function NumberLine({ color }: WidgetProps) {
@@ -103,9 +104,9 @@ export function Coins({ color, grade }: WidgetProps) {
             ? t({ lv: `— par ${sum - target} c par daudz`, ru: `— на ${sum - target} ц больше` })
             : t({ lv: `— vēl trūkst ${target - sum} c`, ru: `— не хватает ${target - sum} ц` })}
       </Readout>
-      <div className="row">
+      <div className="row-btns">
         <button className="btn ghost" onClick={() => setPurse([])}>
-          ↺ {t({ lv: "Iztukšot", ru: "Очистить" })}
+          <Icon name="xmark" size={16} /> {t({ lv: "Iztukšot", ru: "Очистить" })}
         </button>
         <button
           className="btn ghost"
@@ -114,7 +115,7 @@ export function Coins({ color, grade }: WidgetProps) {
             setPurse([]);
           }}
         >
-          🍦 {t({ lv: "Cita cena", ru: "Другая цена" })}
+          <Icon name="refresh" size={16} /> {t({ lv: "Cita cena", ru: "Другая цена" })}
         </button>
       </div>
     </div>

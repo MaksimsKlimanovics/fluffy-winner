@@ -6,6 +6,7 @@ import { GRADES } from "@/lib/curriculum";
 import { type T, UI } from "@/lib/i18n";
 import { useApp } from "./AppProvider";
 import { BottomNav, TopBar } from "./Chrome";
+import { Icon } from "./Icon";
 import { Mascot } from "./Mascot";
 import { BooksScene, BusScene, CityScene } from "./Scenes";
 
@@ -56,7 +57,7 @@ export function HomeView() {
                 onClick={() => setSlide((s) => (s + SLIDES.length - 1) % SLIDES.length)}
                 aria-label={t(UI.back)}
               >
-                ‹
+                <Icon name="chevronLeft" size={20} />
               </button>
               <div className="dots">
                 {SLIDES.map((_, i) => (
@@ -64,7 +65,8 @@ export function HomeView() {
                     key={i}
                     className={i === slide ? "dot active" : "dot"}
                     onClick={() => setSlide(i)}
-                    aria-label={`${i + 1}`}
+                    aria-label={`${i + 1} / ${SLIDES.length}`}
+                    aria-pressed={i === slide}
                   />
                 ))}
               </div>
@@ -73,7 +75,7 @@ export function HomeView() {
                 onClick={() => setSlide((s) => (s + 1) % SLIDES.length)}
                 aria-label={t(UI.next)}
               >
-                ›
+                <Icon name="chevronRight" size={20} />
               </button>
             </div>
           </div>
@@ -113,7 +115,7 @@ export function HomeView() {
             <strong>{t(UI.askAi)}</strong>
             <small>{t(UI.askAiAbout)}</small>
           </span>
-          <span className="cta-arrow">›</span>
+          <Icon name="chevronRight" size={22} className="cta-arrow" />
         </Link>
       </main>
       <BottomNav />

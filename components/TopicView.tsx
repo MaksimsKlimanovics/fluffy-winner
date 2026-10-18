@@ -3,9 +3,11 @@
 import Link from "next/link";
 import { getGrade, getTopic } from "@/lib/curriculum";
 import { UI } from "@/lib/i18n";
+import { readableOn } from "@/lib/color";
 import { useApp } from "./AppProvider";
 import { BottomNav, TopBar } from "./Chrome";
 import { ExerciseCard } from "./ExerciseCard";
+import { Icon } from "./Icon";
 import { MascotSays } from "./Mascot";
 import { Skola2030Box } from "./Skola2030Box";
 import { Widget } from "./widgets";
@@ -18,20 +20,20 @@ export function TopicView({ grade, topicId }: { grade: number; topicId: string }
   const nextTopic = g.topics[idx + 1];
 
   return (
-    <div className="page" style={{ "--c": g.color } as React.CSSProperties}>
-      <TopBar back={`/klase/${grade}`} />
+    <div className="page" style={{ "--c": g.color, "--on-c": readableOn(g.color) } as React.CSSProperties}>
+      <TopBar back={`/klase/${grade}`} backLabel={`${g.grade}. ${t(UI.grade)}`} title={t(topic.title)} />
       <main className="content topic">
-        <section className="topic-hero">
-          <span className="topic-hero-icon" aria-hidden="true">
+        <header className="large-title with-icon">
+          <span className="title-icon" aria-hidden="true">
             {topic.icon}
           </span>
           <div>
-            <small>
+            <p className="eyebrow">
               {g.grade}. {t(UI.grade)}
-            </small>
-            <h1>{t(topic.title)}</h1>
+            </p>
+            <h1 data-large-title>{t(topic.title)}</h1>
           </div>
-        </section>
+        </header>
 
         <Skola2030Box grade={grade} codes={topic.skola2030} />
 
@@ -46,14 +48,21 @@ export function TopicView({ grade, topicId }: { grade: number; topicId: string }
           <p>{t(topic.realCase.text)}</p>
         </section>
 
-        <section className="block">
-          <h2>{t(UI.howItWorks)}</h2>
-          <ul className="theory">
+        <section className="group">
+          <h2 className="group-header">{t(UI.howItWorks)}</h2>
+          <ul className="list">
             {topic.theory.map((line, i) => (
-              <li key={i}>{t(line)}</li>
+              <li key={i} className="row static">
+                <span className="row-bullet" aria-hidden="true" />
+                <span className="row-text">{t(line)}</span>
+              </li>
             ))}
+            {topic.formula && (
+              <li className="row static formula-row">
+                <span className="formula">{topic.formula}</span>
+              </li>
+            )}
           </ul>
-          {topic.formula && <div className="formula">{topic.formula}</div>}
         </section>
 
         {topic.widget && (
@@ -69,32 +78,45 @@ export function TopicView({ grade, topicId }: { grade: number; topicId: string }
           <ExerciseCard generator={topic.generator} grade={grade} topicId={topicId} color={g.color} />
         </section>
 
-        <section className="block">
-          <h2>{t(UI.askAiAbout)}</h2>
-          <div className="ask-chips">
+        <section className="group">
+          <h2 className="group-header">{t(UI.askAiAbout)}</h2>
+          <ul className="list">
             {topic.askAi.map((q, i) => (
-              <Link
-                key={i}
-                className="chip"
-                href={`/chat?grade=${grade}&topic=${topicId}&q=${encodeURIComponent(t(q))}`}
-              >
-                💬 {t(q)}
-              </Link>
+              <li key={i}>
+                <Link className="row" href={`/chat?grade=${grade}&topic=${topicId}&q=${encodeURIComponent(t(q))}`}>
+                  <Icon name="bubble" size={20} className="row-glyph" />
+                  <span className="row-text">{t(q)}</span>
+                  <Icon name="chevronRight" size={18} className="chevron" />
+                </Link>
+              </li>
             ))}
-            <Link className="chip strong" href={`/chat?grade=${grade}&topic=${topicId}`}>
-              {t(UI.askAi)} →
-            </Link>
-          </div>
+            <li>
+              <Link className="row tinted" href={`/chat?grade=${grade}&topic=${topicId}`}>
+                <Icon name="sparkles" size={20} className="row-glyph" />
+                <span className="row-text">{t(UI.askAi)}</span>
+                <Icon name="chevronRight" size={18} className="chevron" />
+              </Link>
+            </li>
+          </ul>
         </section>
 
         {nextTopic && (
-          <Link href={`/klase/${grade}/${nextTopic.id}`} className="next-topic">
-            <span>{t(UI.next)}:</span>
-            <strong>
-              {nextTopic.icon} {t(nextTopic.title)}
-            </strong>
-            <span aria-hidden="true">›</span>
-          </Link>
+          <section className="group">
+            <ul className="list">
+              <li>
+                <Link href={`/klase/${grade}/${nextTopic.id}`} className="row">
+                  <span className="row-icon" aria-hidden="true">
+                    {nextTopic.icon}
+                  </span>
+                  <span className="row-text">
+                    <small>{t(UI.next)}</small>
+                    <strong>{t(nextTopic.title)}</strong>
+                  </span>
+                  <Icon name="chevronRight" size={18} className="chevron" />
+                </Link>
+              </li>
+            </ul>
+          </section>
         )}
       </main>
       <BottomNav />

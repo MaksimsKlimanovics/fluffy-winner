@@ -6,6 +6,7 @@ import { getGrade, getTopic } from "@/lib/curriculum";
 import { type T, UI } from "@/lib/i18n";
 import { useApp } from "./AppProvider";
 import { BottomNav, TopBar } from "./Chrome";
+import { Icon } from "./Icon";
 import { Mascot } from "./Mascot";
 import { Messages, RichText } from "./chat/Messages";
 import { useTutorChat } from "./chat/useTutorChat";
@@ -52,7 +53,10 @@ export function ChatView() {
 
   return (
     <div className="page chat-page" style={{ "--c": color } as React.CSSProperties}>
-      <TopBar back={topic && g ? `/klase/${g.grade}/${topic.id}` : "/"} />
+      <TopBar
+        back={topic && g ? `/klase/${g.grade}/${topic.id}` : "/"}
+        backLabel={topic ? t(topic.title) : t(UI.home)}
+      />
       <div className="chat-head">
         <Mascot size={52} color={color} mood={busy ? "thinking" : "happy"} />
         <div>
@@ -68,7 +72,7 @@ export function ChatView() {
             className="btn ghost small"
             onClick={reset}
           >
-            ↺ {t(UI.chatClear)}
+            <Icon name="refresh" size={16} /> {t(UI.chatClear)}
           </button>
         )}
       </div>
@@ -113,7 +117,7 @@ export function ChatView() {
           maxLength={2000}
         />
         <button className="btn primary send" type="submit" disabled={busy || !input.trim()} aria-label={t(UI.send)}>
-          ➤
+          <Icon name="send" size={20} />
         </button>
       </form>
       <BottomNav />

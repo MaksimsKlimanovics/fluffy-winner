@@ -4,7 +4,9 @@ import { useEffect, useRef, useState } from "react";
 import { type T, UI } from "@/lib/i18n";
 import type { ExerciseContext } from "@/lib/tutor";
 import { useApp } from "../AppProvider";
+import { Icon } from "../Icon";
 import { Mascot } from "../Mascot";
+import { Sheet } from "../Sheet";
 import { Messages } from "./Messages";
 import { useTutorChat } from "./useTutorChat";
 
@@ -16,9 +18,9 @@ const ACTIONS: Record<"start" | "explain" | "mistake" | "why", T> = {
 };
 
 /**
- * Cipariņš inside the exercise card. It knows the exact task on screen (the
- * server rebuilds it from the seed), the child's wrong attempts and whether
- * they already solved it, so "explain the solution" is about *this* task.
+ * Cipariņš for the exercise on screen, in a bottom sheet. It knows the exact
+ * task (the server rebuilds it from the seed), the child's wrong attempts and
+ * whether they already solved it, so "explain the solution" is about *this* task.
  */
 export function ExerciseTutor({
   grade,
@@ -27,6 +29,7 @@ export function ExerciseTutor({
   getContext,
   hasWrongAttempts,
   solved,
+  host,
   onClose,
 }: {
   grade: number;
@@ -35,6 +38,8 @@ export function ExerciseTutor({
   getContext: () => ExerciseContext;
   hasWrongAttempts: boolean;
   solved: boolean;
+  /** The page the sheet attaches to. */
+  host: HTMLElement;
   onClose: () => void;
 }) {
   const { t } = useApp();
@@ -59,64 +64,68 @@ export function ExerciseTutor({
   ];
 
   return (
-    <div className="exercise-tutor" style={{ "--c": color } as React.CSSProperties}>
-      <div className="exercise-tutor-head">
-        <Mascot size={40} color={color} mood={busy ? "thinking" : "happy"} />
-        <div>
-          <strong>Cipariņš</strong>
-          <small>{t({ lv: "Redzu tavu uzdevumu un mēģinājumus", ru: "Вижу твою задачу и попытки" })}</small>
-        </div>
-        <button className="icon-btn small" onClick={onClose} aria-label={t(UI.back)}>
-          ×
-        </button>
-      </div>
-
-      <div className="exercise-tutor-scroll" ref={scrollRef} aria-live="polite">
-        {messages.length === 0 && (
-          <div className="msg assistant">
-            {t({
-              lv: "Kopā izdomāsim šo uzdevumu! Izvēlies, ar ko palīdzēt:",
-              ru: "Давай разберёмся с этой задачей вместе! Выбери, чем помочь:",
-            })}
+    <Sheet host={host} label={t({ lv: "Cipariņš palīdz ar uzdevumu", ru: "Ципариньш помогает с задачей" })} onClose={onClose}>
+      {({ grab, close }) => (
+        <div className="exercise-tutor" style={{ "--c": color } as React.CSSProperties}>
+          <div className="exercise-tutor-head" {...grab}>
+            <Mascot size={40} color={color} mood={busy ? "thinking" : "happy"} />
+            <div>
+              <strong>Cipariņš</strong>
+              <small>{t({ lv: "Redzu tavu uzdevumu un mēģinājumus", ru: "Вижу твою задачу и попытки" })}</small>
+            </div>
+            <button type="button" className="icon-btn small" onClick={close} aria-label={t({ lv: "Aizvērt", ru: "Закрыть" })}>
+              <Icon name="xmark" size={16} />
+            </button>
           </div>
-        )}
-        <Messages messages={messages} />
-      </div>
 
-      <div className="quick-actions">
-        {quick.map((q) => (
-          <button key={q.lv} className="chip" onClick={() => ask(t(q))} disabled={busy}>
-            {t(q)}
-          </button>
-        ))}
-      </div>
+          <div className="exercise-tutor-scroll" ref={scrollRef} aria-live="polite">
+            {messages.length === 0 && (
+              <div className="msg assistant">
+                {t({
+                  lv: "Kopā izdomāsim šo uzdevumu! Izvēlies, ar ko palīdzēt:",
+                  ru: "Давай разберёмся с этой задачей вместе! Выбери, чем помочь:",
+                })}
+              </div>
+            )}
+            <Messages messages={messages} />
+          </div>
 
-      <form
-        className="chat-input inline"
-        onSubmit={(e) => {
-          e.preventDefault();
-          ask(input);
-        }}
-      >
-        <textarea
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && !e.shiftKey) {
+          <div className="quick-actions">
+            {quick.map((q) => (
+              <button key={q.lv} type="button" className="chip" onClick={() => ask(t(q))} disabled={busy}>
+                {t(q)}
+              </button>
+            ))}
+          </div>
+
+          <form
+            className="chat-input inline"
+            onSubmit={(e) => {
               e.preventDefault();
               ask(input);
-            }
-          }}
-          rows={1}
-          maxLength={2000}
-          placeholder={t(UI.chatPlaceholder)}
-          aria-label={t(UI.chatPlaceholder)}
-        />
-        <button className="btn primary send" type="submit" disabled={busy || !input.trim()} aria-label={t(UI.send)}>
-          ➤
-        </button>
-      </form>
-      <p className="disclaimer">{t(UI.aiDisclaimer)}</p>
-    </div>
+            }}
+          >
+            <textarea
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  ask(input);
+                }
+              }}
+              rows={1}
+              maxLength={2000}
+              placeholder={t(UI.chatPlaceholder)}
+              aria-label={t(UI.chatPlaceholder)}
+            />
+            <button className="btn primary send" type="submit" disabled={busy || !input.trim()} aria-label={t(UI.send)}>
+              <Icon name="send" size={20} />
+            </button>
+          </form>
+          <p className="disclaimer">{t(UI.aiDisclaimer)}</p>
+        </div>
+      )}
+    </Sheet>
   );
 }

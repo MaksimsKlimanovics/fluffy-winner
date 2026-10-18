@@ -29,7 +29,16 @@ export function Slider({
       <span className="slider-label">
         {t(label)} <b>{fmt(value)}{suffix}</b>
       </span>
-      <input type="range" min={min} max={max} step={step} value={value} onChange={(e) => onChange(Number(e.target.value))} />
+      <input
+        type="range"
+        min={min}
+        max={max}
+        step={step}
+        value={value}
+        onChange={(e) => onChange(Number(e.target.value))}
+        // Filled track up to the thumb, like the iOS slider.
+        style={{ "--progress": `${((value - min) / (max - min)) * 100}%` } as React.CSSProperties}
+      />
     </label>
   );
 }

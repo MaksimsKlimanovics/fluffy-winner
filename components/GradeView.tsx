@@ -4,8 +4,10 @@ import Link from "next/link";
 import { getGrade } from "@/lib/curriculum";
 import { stageOf } from "@/lib/skola2030";
 import { type T, UI } from "@/lib/i18n";
+import { readableOn } from "@/lib/color";
 import { useApp } from "./AppProvider";
 import { BottomNav, TopBar } from "./Chrome";
+import { Icon } from "./Icon";
 import { Mascot } from "./Mascot";
 
 const KIND_LABEL: Record<string, T> = {
@@ -18,54 +20,61 @@ export function GradeView({ grade }: { grade: number }) {
   const { t, stars } = useApp();
   const g = getGrade(grade)!;
 
-  return (
-    <div className="page" style={{ "--c": g.color } as React.CSSProperties}>
-      <TopBar back="/" />
-      <main className="content">
-        <section className="grade-hero">
-          <div>
-            <span className="grade-hero-num">
-              {g.grade}. {t(UI.grade)}
-            </span>
-            <h1>{t(g.title)}</h1>
-            <p>{t(g.subtitle)}</p>
-            <span className="stage-chip">
-              📘 Skola2030 ·{" "}
-              {t({
-                lv: `${stageOf(grade) - 2}.–${stageOf(grade)}. klases posms`,
-                ru: `этап ${stageOf(grade) - 2}–${stageOf(grade)} классов`,
-              })}
-            </span>
-          </div>
-          <Mascot size={96} color={g.color} mood="cheer" />
-        </section>
+  const stage = stageOf(grade);
 
-        <ul className="topic-list">
-          {g.topics.map((topic) => {
-            const s = stars(grade, topic.id);
-            return (
-              <li key={topic.id}>
-                <Link href={`/klase/${grade}/${topic.id}`} className="topic-card">
-                  <span className="topic-icon" aria-hidden="true">
-                    {topic.icon}
-                  </span>
-                  <span className="topic-text">
-                    <small className={`tag tag-${topic.kind}`}>{t(KIND_LABEL[topic.kind])}</small>
-                    <strong>{t(topic.title)}</strong>
-                    <span className="topic-why">{t(topic.why)}</span>
-                  </span>
-                  <span className="topic-stars" aria-label={`${s} ${t(UI.stars)}`}>
-                    {[0, 1, 2].map((i) => (
-                      <span key={i} className={i < s ? "on" : ""}>
-                        ★
-                      </span>
-                    ))}
-                  </span>
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
+  return (
+    <div className="page" style={{ "--c": g.color, "--on-c": readableOn(g.color) } as React.CSSProperties}>
+      <TopBar back="/" backLabel={t(UI.home)} title={`${g.grade}. ${t(UI.grade)}`} />
+      <main className="content">
+        <header className="large-title">
+          <div>
+            <p className="eyebrow">
+              {g.grade}. {t(UI.grade)}
+            </p>
+            <h1 data-large-title>{t(g.title)}</h1>
+            <p className="subtitle">{t(g.subtitle)}</p>
+          </div>
+          <Mascot size={76} color={g.color} mood="cheer" />
+        </header>
+
+        <section className="group">
+          <h2 className="group-header">
+            {t({ lv: "Tēmas", ru: "Темы" })} · {g.topics.length}
+          </h2>
+          <ul className="list">
+            {g.topics.map((topic) => {
+              const s = stars(grade, topic.id);
+              return (
+                <li key={topic.id}>
+                  <Link href={`/klase/${grade}/${topic.id}`} className="row">
+                    <span className="row-icon" aria-hidden="true">
+                      {topic.icon}
+                    </span>
+                    <span className="row-text">
+                      <strong>{t(topic.title)}</strong>
+                      <small>
+                        <span className={`tag tag-${topic.kind}`}>{t(KIND_LABEL[topic.kind])}</span>
+                        <span className="row-stars" aria-label={`${s} ${t(UI.stars)}`}>
+                          {[0, 1, 2].map((i) => (
+                            <Icon key={i} name="star" size={12} filled={i < s} className={i < s ? "on" : ""} />
+                          ))}
+                        </span>
+                      </small>
+                    </span>
+                    <Icon name="chevronRight" size={18} className="chevron" />
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+          <p className="group-footer">
+            Skola2030 ·{" "}
+            {t({
+              lv: `${stage - 2}.–${stage}. klases posma sasniedzamie rezultāti`,
+              ru: `результаты этапа ${stage - 2}–${stage} классов`,
+            })}
+          </p>
+        </section>
       </main>
       <BottomNav />
     </div>

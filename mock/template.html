@@ -55,13 +55,13 @@ body {
 }
 .panel h1 { font-size: 40px; font-weight: 900; letter-spacing: -0.5px; margin: 0; text-wrap: balance; color: var(--shell-fg); }
 .lede { margin: 6px 0 0; font-size: 16px; line-height: 1.5; color: var(--shell-muted); }
-.eyebrow { font-size: 12px; font-weight: 900; letter-spacing: 0.8px; text-transform: uppercase; color: var(--shell-muted); margin: 0 0 8px; }
-.seg { display: flex; padding: 4px; gap: 4px; border-radius: 14px; background: var(--shell-panel); border: 1px solid var(--shell-line); }
-.seg button {
+.shell-label { font-size: 12px; font-weight: 900; letter-spacing: 0.8px; text-transform: uppercase; color: var(--shell-muted); margin: 0 0 8px; }
+.shell-seg { display: flex; padding: 4px; gap: 4px; border-radius: 14px; background: var(--shell-panel); border: 1px solid var(--shell-line); }
+.shell-seg button {
   flex: 1; border: 0; border-radius: 10px; padding: 9px 6px; background: transparent; cursor: pointer;
   font: 800 14px var(--font); color: var(--shell-muted);
 }
-.seg button[aria-pressed="true"] { background: var(--shell-accent); color: var(--shell-accent-fg); }
+.shell-seg button[aria-pressed="true"] { background: var(--shell-accent); color: var(--shell-accent-fg); }
 .tries { display: flex; flex-direction: column; gap: 6px; }
 .tries button {
   display: flex; align-items: center; justify-content: space-between; gap: 10px; text-align: left;
@@ -98,10 +98,13 @@ button:focus-visible { outline: 3px solid var(--shell-accent); outline-offset: 2
 .device[data-device="android"] .cutout { display: block; top: 22px; left: 50%; width: 16px; height: 16px; border-radius: 50%; transform: translateX(-50%); }
 
 /* The app's own viewport: fixed elements (bottom nav) pin to the screen, the page scrolls inside it. */
-.screen { position: relative; overflow: hidden; transform: translateZ(0); background: #eef1ff; }
+.screen { position: relative; overflow: hidden; transform: translateZ(0); background: var(--bg, #f2f2f7); }
 .app-scroll { height: 100%; overflow-y: auto; overscroll-behavior: contain; container-type: size; container-name: app; font-family: var(--font); scrollbar-width: thin; }
-.device[data-device="iphone"] .app-scroll .topbar,
-.device[data-device="android"] .app-scroll .topbar { padding-top: 44px; }
+/* Status-bar and home-indicator space on phones (what env(safe-area-inset-*) gives on a real device). */
+.device[data-device="iphone"] .app-scroll .navbar { padding-top: 50px; }
+.device[data-device="android"] .app-scroll .navbar { padding-top: 34px; }
+.device[data-device="iphone"] .app-scroll .tabbar { padding-bottom: 26px; }
+.device[data-device="iphone"] .app-scroll .page { padding-bottom: 104px; }
 
 /* Phone-sized viewers: no frame, the app simply fills the space. */
 @media (max-width: 720px) {
@@ -114,7 +117,8 @@ button:focus-visible { outline: 3px solid var(--shell-accent); outline-offset: 2
   .bezel { padding: 0 !important; border-radius: 22px !important; background: none !important; box-shadow: 0 10px 30px rgba(30, 32, 70, 0.2); overflow: hidden; }
   .screen { width: 100% !important; height: min(820px, calc(100dvh - 120px)) !important; border-radius: 22px !important; }
   .chrome, .cutout { display: none !important; }
-  .app-scroll .topbar { padding-top: 12px !important; }
+  .app-scroll .navbar { padding-top: 0 !important; }
+  .app-scroll .tabbar { padding-bottom: 6px !important; }
 }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 
@@ -129,15 +133,15 @@ button:focus-visible { outline: 3px solid var(--shell-accent); outline-offset: 2
       <p class="lede">Klikšķināms prototips: īstās lietotnes ekrāni, modeļi un uzdevumi. Spied visu, ko redzi ekrānā.</p>
     </div>
     <div class="device-pick">
-      <p class="eyebrow" id="device-label">Ierīce</p>
-      <div class="seg" role="group" aria-labelledby="device-label">
+      <p class="shell-label" id="device-label">Ierīce</p>
+      <div class="shell-seg" role="group" aria-labelledby="device-label">
         <button type="button" id="dev-iphone" data-device="iphone" aria-pressed="true">iPhone</button>
         <button type="button" id="dev-android" data-device="android" aria-pressed="false">Android</button>
         <button type="button" id="dev-desktop" data-device="desktop" aria-pressed="false">Dators</button>
       </div>
     </div>
     <div class="tries-wrap">
-      <p class="eyebrow">Ko izmēģināt</p>
+      <p class="shell-label">Ko izmēģināt</p>
       <div class="tries">
         <button type="button" data-go="/"><span>Sākums<small>Klases izvēle, valoda LV / RU</small></span></button>
         <button type="button" data-go="/klase/8/pitagors"><span>Pitagora teorēma<small>Modelis, uzdevums, Cipariņš</small></span></button>
@@ -193,12 +197,12 @@ button:focus-visible { outline: 3px solid var(--shell-accent); outline-offset: 2
 
   function setDevice(name) {
     device.dataset.device = name;
-    document.querySelectorAll(".seg button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.device === name)));
+    document.querySelectorAll(".shell-seg button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.device === name)));
     store.set("ciparini.mock.device", name);
     fit();
   }
 
-  document.querySelectorAll(".seg button").forEach((b) => b.addEventListener("click", () => setDevice(b.dataset.device)));
+  document.querySelectorAll(".shell-seg button").forEach((b) => b.addEventListener("click", () => setDevice(b.dataset.device)));
   document.querySelectorAll("[data-go]").forEach((b) =>
     b.addEventListener("click", () => window.ciparini && window.ciparini.navigate(b.dataset.go)),
   );

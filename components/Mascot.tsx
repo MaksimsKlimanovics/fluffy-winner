@@ -26,18 +26,18 @@ export function Mascot({
       aria-label="Cipariņš"
     >
       {/* antenna with spark */}
-      <line x1="60" y1="22" x2="60" y2="8" stroke="#2b2d42" strokeWidth="3" strokeLinecap="round" />
-      <circle cx="60" cy="7" r="5" fill="#ffc93c" className="mascot-spark" />
+      <line x1="60" y1="22" x2="60" y2="8" className="mascot-line" strokeWidth="3" strokeLinecap="round" />
+      <circle cx="60" cy="7" r="5" fill="#ffc93c" />
       {/* arms */}
       {mood === "cheer" ? (
         <>
-          <path d="M22 66 L8 44" stroke="#2b2d42" strokeWidth="5" strokeLinecap="round" />
-          <path d="M98 66 L112 44" stroke="#2b2d42" strokeWidth="5" strokeLinecap="round" />
+          <path d="M22 66 L8 44" className="mascot-line" strokeWidth="5" strokeLinecap="round" />
+          <path d="M98 66 L112 44" className="mascot-line" strokeWidth="5" strokeLinecap="round" />
         </>
       ) : (
         <>
-          <path d="M22 70 L10 82" stroke="#2b2d42" strokeWidth="5" strokeLinecap="round" />
-          <path d="M98 70 L110 60" stroke="#2b2d42" strokeWidth="5" strokeLinecap="round" />
+          <path d="M22 70 L10 82" className="mascot-line" strokeWidth="5" strokeLinecap="round" />
+          <path d="M98 70 L110 60" className="mascot-line" strokeWidth="5" strokeLinecap="round" />
           {/* screwdriver-pencil */}
           <rect x="106" y="40" width="6" height="22" rx="2" fill="#ff8a3d" transform="rotate(20 109 51)" />
         </>
@@ -71,8 +71,8 @@ export function Mascot({
         π
       </text>
       {/* feet */}
-      <rect x="36" y="96" width="16" height="10" rx="5" fill="#2b2d42" />
-      <rect x="68" y="96" width="16" height="10" rx="5" fill="#2b2d42" />
+      <rect x="36" y="96" width="16" height="10" rx="5" className="mascot-foot" />
+      <rect x="68" y="96" width="16" height="10" rx="5" className="mascot-foot" />
       <defs>
         <linearGradient id="mascotShine" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0" stopColor="#fff" stopOpacity="0.35" />

@@ -13,13 +13,14 @@ const SWAPS = {
   react: shim("react.ts"),
   "react/jsx-runtime": shim("jsx-runtime.ts"),
   "react-dom/client": shim("react-dom-client.ts"),
+  "react-dom": shim("react-dom.ts"),
   "next/link": shim("next-link.tsx"),
   "next/navigation": shim("next-navigation.ts"),
 };
 const swapPlugin = {
   name: "mock-swaps",
   setup(b) {
-    b.onResolve({ filter: /^(react|react\/jsx-runtime|react-dom\/client|next\/link|next\/navigation)$/ }, (args) => ({
+    b.onResolve({ filter: /^(react|react\/jsx-runtime|react-dom|react-dom\/client|next\/link|next\/navigation)$/ }, (args) => ({
       path: SWAPS[args.path],
     }));
   },
@@ -44,7 +45,7 @@ let css = readFileSync(resolve(root, "app/globals.css"), "utf8");
 const swaps = [
   // The shell owns the page body; the app's reset applies to its own root.
   [/html,\nbody \{\n  margin: 0;\n  padding: 0;\n\}/, ".app-root {\n  margin: 0;\n  padding: 0;\n}"],
-  [/\nbody \{\n  color: var\(--ink\);/, "\n.app-root {\n  color: var(--ink);"],
+  [/\nbody \{\n  color: var\(--label\);/, "\n.app-root {\n  color: var(--label);"],
   [/min-height: 100vh;/g, "min-height: 100cqh;"],
   [/height: 100dvh;/g, "height: 100cqh;"],
   [/@media \(max-width: 400px\)/g, "@container app (max-width: 400px)"],
