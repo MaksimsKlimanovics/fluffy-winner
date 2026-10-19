@@ -10,6 +10,7 @@ import {
 } from "@/lib/duel";
 import { MemoryStore } from "@/lib/duel-store";
 import { formatAnswer, generateExercise } from "@/lib/exercises";
+import { setFileSaver } from "@/components/duel/save";
 import { TROPHY_SCHEMA, type TrophySpec, classicSpec, normalizeSpec, trophyPrompt } from "@/lib/trophy";
 
 /**
@@ -111,7 +112,23 @@ async function handle(url: URL, init: RequestInit | undefined): Promise<Response
   }
 }
 
+type Downloads = { save: (r: { filename: string; data: Blob }) => Promise<unknown> } | null;
+
 export function installDuelBridge() {
+  // The artifact viewer blocks plain download links; files go through `downloads`, which the viewer confirms.
+  const claude = (window as unknown as { claude?: { use: (n: string) => Promise<unknown> } }).claude;
+  const downloads: Promise<Downloads> = claude?.use ? claude.use("downloads").then((d) => (d as Downloads) ?? null).catch(() => null) : Promise.resolve(null);
+  setFileSaver(async (blob, filename) => {
+    const d = await downloads;
+    if (!d) throw new Error("unavailable");
+    try {
+      await d.save({ filename, data: blob });
+      return true;
+    } catch (e) {
+      if ((e as { code?: string })?.code === "declined") return false;
+      throw e;
+    }
+  });
   const nextFetch = window.fetch.bind(window);
   window.fetch = (input: RequestInfo | URL, init?: RequestInit) => {
     const href = typeof input === "string" ? input : input instanceof URL ? input.href : input.url;

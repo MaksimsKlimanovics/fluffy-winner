@@ -7,6 +7,7 @@ import { useApp } from "../AppProvider";
 import { Icon } from "../Icon";
 import { TrophyArt, trophyToJpeg } from "./Trophy";
 import { duelApi, errorText } from "./api";
+import { saveFile } from "./save";
 
 type Trophy = { spec: TrophySpec; winnerName: string; grade: number; score: number };
 
@@ -34,15 +35,7 @@ export function TrophyPanel({ code, token, helperName }: { code: string; token: 
     if (!svgRef.current || saving) return;
     setSaving(true);
     try {
-      const blob = await trophyToJpeg(svgRef.current);
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `ciparini-trofeja-${code}.jpg`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      setTimeout(() => URL.revokeObjectURL(url), 10_000);
+      await saveFile(await trophyToJpeg(svgRef.current), `ciparini-trofeja-${code}.jpg`);
     } catch {
       setError({ lv: "Neizdevās saglabāt attēlu.", ru: "Не удалось сохранить картинку." });
     } finally {
