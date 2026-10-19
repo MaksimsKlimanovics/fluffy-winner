@@ -64,12 +64,13 @@ export function TopBar({ back, backLabel, title }: { back?: string; backLabel?: 
   );
 }
 
-/** Tab bar: the app's two top-level destinations, symbol above label. */
+/** Tab bar: the app's top-level destinations, symbol above label. */
 export function BottomNav() {
   const { t } = useApp();
   const path = usePathname();
   const items = [
     { href: "/", icon: "house" as const, label: t(UI.home), active: path === "/" || path.startsWith("/klase") },
+    { href: "/sacensibas", icon: "trophy" as const, label: t(UI.duel), active: path.startsWith("/sacensibas") },
     { href: "/chat", icon: "bubble" as const, label: t(UI.chat), active: path.startsWith("/chat") },
   ];
   return (

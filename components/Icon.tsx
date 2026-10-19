@@ -16,6 +16,10 @@ const PATHS = {
   checkmark: "M5 12.5l4.5 4.5L19 7.5",
   sparkles: "M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8zM19 16l.8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8z",
   book: "M4 5.5A2.5 2.5 0 016.5 3H20v15H6.5A2.5 2.5 0 004 20.5zM4 20.5A2.5 2.5 0 016.5 18H20v3H6.5",
+  trophy: "M8 4h8v5a4 4 0 01-8 0zM8 6H5.5a2.5 2.5 0 002.8 4.4M16 6h2.5a2.5 2.5 0 01-2.8 4.4M12 13v4M8.5 20h7M10 17h4v3h-4z",
+  share: "M12 4v11M8 7.5L12 4l4 3.5M7 11H5v9h14v-9h-2",
+  download: "M12 4v11M8 11.5l4 4 4-4M5 20h14",
+  lock: "M7 11V8a5 5 0 0110 0v3M6 11h12v9H6z",
 } as const;
 
 export type IconName = keyof typeof PATHS;

@@ -8,6 +8,7 @@ export const {
   Suspense,
   createContext,
   createElement,
+  forwardRef,
   useCallback,
   useContext,
   useEffect,

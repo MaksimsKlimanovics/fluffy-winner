@@ -58,6 +58,18 @@ Pamatā ir saistošais dokuments — **MK 27.11.2018. noteikumi Nr. 747, 6. piel
 - **Bērnu slānis paliek:** klašu krāsas, Cipariņš, ilustrācijas. Krāsains teksts tiek sajaukts ar teksta krāsu (`color-mix`), lai sasniegtu kontrastu; teksts uz klases krāsas tiek izvēlēts automātiski (`lib/color.ts`).
 - Visa sistēma ir `app/globals.css` sākumā (tokeni) — komponentēs nav cietu krāsu, izņemot zīmējumus uz „papīra“ fona.
 
+## Sacensību režīms / Режим соревнований
+
+Divi bērni no dažādām ierīcēm risina vienus un tos pašus izvēlētās klases uzdevumus uz laiku (1, 2, 3 vai 5 min).
+
+1. Viens izvēlas segvārdu, klasi un laiku un saņem **6 ciparu uzaicinājuma kodu** (vai saiti `/sacensibas?kods=…`).
+2. Draugs ievada kodu un savu segvārdu, un pēc 5 s atskaites sākas spēle.
+3. **Atbildi nevar labot:** katram jautājumam serveris pieņem tieši vienu atbildi, pēc kārtas. Pēc atbildes uz brīdi redzams ✓ vai pareizā atbilde, tad nāk nākamais uzdevums.
+4. 10 punkti par pareizu atbildi. Ja punkti vienādi, uzvar tas, kurš tos savāca ātrāk.
+5. **Uzvarētājs saņem trofeju:** Claude (structured outputs, JSON shēma) izdomā goda nosaukumu, moto un izskatu — formu, metālu, rokturus, emblēmu, krāsas un fonu. Pārlūks to uzzīmē kā SVG un saglabā **JPG** (1080 × 1350) ar pogu „Lejupielādēt JPG“. Claude nezīmē pikseļus, tāpēc dizains ir strukturēts apraksts, ko lietotne vienmēr spēj uzzīmēt. Ja AI nav pieejams, tiek izmantots iebūvēts dizains, kas atvasināts no koda.
+
+Как устроено: `lib/duel.ts` — судья (сервер хранит ключи ответов, часы и решает, кто победил; браузер получает вопрос без ответа). У каждого игрока своя запись в Redis, поэтому одновременные ответы не перезаписывают друг друга; второе место занимается атомарно (`SET NX`). Браузер опрашивает состояние раз в 1,5 с — WebSocket на Vercel не нужен. Данные матча (только ники и ответы) удаляются через 2 часа. Секрет игрока хранится в `localStorage` и передаётся в заголовке `x-duel-token`.
+
 ## Стек
 
 - **Next.js 16** (App Router) + React 19 + TypeScript — все страницы тем статически генерируются
@@ -81,7 +93,11 @@ npm test                        # тесты генераторов и вали�
 2. В **Settings → Environment Variables** добавьте:
    - `ANTHROPIC_API_KEY` — ключ из [console.anthropic.com](https://console.anthropic.com) (обязательно)
    - `CLAUDE_MODEL` — модель (необязательно, по умолчанию `claude-opus-5-5`)
-3. **Deploy.** Ключ используется только на сервере и никогда не попадает в браузер.
+3. Для режима соревнований: **Storage → Create → Upstash for Redis** (бесплатный план подходит)
+   и подключите базу к проекту. Vercel сам добавит `KV_REST_API_URL` и `KV_REST_API_TOKEN`
+   (подходят и `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN`). Без Redis на Vercel
+   раздел «Sacensības» честно сообщит, что режим не включён; остальное приложение работает.
+4. **Deploy.** Ключ используется только на сервере и никогда не попадает в браузер.
 
 ### Настройки AI
 

@@ -50,6 +50,7 @@ export const UI = {
   streak: { lv: "pēc kārtas", ru: "подряд" },
   home: { lv: "Sākums", ru: "Главная" },
   chat: { lv: "AI čats", ru: "AI-чат" },
+  duel: { lv: "Sacensības", ru: "Соревнования" },
   suggestions: { lv: "Piemēram:", ru: "Например:" },
   notFound: { lv: "Šāda lapa nav atrasta", ru: "Такая страница не найдена" },
   standardOriginal: {
