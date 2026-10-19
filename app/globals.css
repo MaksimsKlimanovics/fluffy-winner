@@ -914,6 +914,16 @@ a.row:active {
   background: var(--c);
 }
 
+.cta-icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #ffd23f, #f77f00);
+  color: #ffffff;
+}
 .cta-chat {
   display: flex;
   align-items: center;

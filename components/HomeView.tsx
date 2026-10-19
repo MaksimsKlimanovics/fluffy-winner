@@ -113,6 +113,22 @@ export function HomeView() {
           })}
         </div>
 
+        <Link href="/sacensibas" className="cta-chat cta-duel">
+          <span className="cta-icon" aria-hidden="true">
+            <Icon name="trophy" size={30} />
+          </span>
+          <span>
+            <strong>{t({ lv: "Sacensības ar draugu", ru: "Соревнование с другом" })}</strong>
+            <small>
+              {t({
+                lv: "Izaicini draugu ar kodu: vienādi uzdevumi, viens laiks, uzvarētājam AI trofeja.",
+                ru: "Вызови друга по коду: одинаковые задачи, одно время, победителю — AI-кубок.",
+              })}
+            </small>
+          </span>
+          <Icon name="chevronRight" size={22} className="cta-arrow" />
+        </Link>
+
         <Link href="/chat" className="cta-chat">
           <Mascot size={56} mood="thinking" color="#f72585" />
           <span>
