@@ -103,6 +103,9 @@ button:focus-visible { outline: 3px solid var(--shell-accent); outline-offset: 2
 /* Status-bar and home-indicator space on phones (what env(safe-area-inset-*) gives on a real device). */
 .device[data-device="iphone"] .app-scroll .navbar { padding-top: 50px; }
 .device[data-device="android"] .app-scroll .navbar { padding-top: 34px; }
+/* Sticky parts below the bar (the topic switcher) sit under its full height. */
+.device[data-device="iphone"] .app-scroll { --navbar-h: 102px; }
+.device[data-device="android"] .app-scroll { --navbar-h: 86px; }
 .device[data-device="iphone"] .app-scroll .tabbar { padding-bottom: 26px; }
 .device[data-device="iphone"] .app-scroll .page { padding-bottom: 104px; }
 

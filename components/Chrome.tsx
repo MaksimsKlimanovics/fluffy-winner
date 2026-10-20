@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import { GRADES } from "@/lib/curriculum";
+import { gradeColorAttrs } from "@/lib/grade-ui";
 import { LANGS, UI } from "@/lib/i18n";
 import { useApp } from "./AppProvider";
 import { Icon } from "./Icon";
@@ -64,9 +66,12 @@ export function TopBar({ back, backLabel, title }: { back?: string; backLabel?: 
   );
 }
 
-/** Tab bar: the app's top-level destinations, symbol above label. */
+/**
+ * The app's top-level destinations. Narrow: an iOS tab bar, symbol above label. Wide (a laptop,
+ * where parents and teachers look): a sidebar that also lists the nine grades.
+ */
 export function BottomNav() {
-  const { t } = useApp();
+  const { t, stars } = useApp();
   const path = usePathname();
   const items = [
     { href: "/", icon: "house" as const, label: t(UI.home), active: path === "/" || path.startsWith("/klase") },
@@ -74,13 +79,59 @@ export function BottomNav() {
     { href: "/chat", icon: "bubble" as const, label: t(UI.chat), active: path.startsWith("/chat") },
   ];
   return (
-    <nav className="tabbar" aria-label={t(UI.appName)}>
-      {items.map((i) => (
-        <Link key={i.href} href={i.href} aria-current={i.active ? "page" : undefined}>
-          <Icon name={i.icon} size={24} />
-          <span>{i.label}</span>
+    <>
+      <nav className="tabbar" aria-label={t(UI.appName)}>
+        {items.map((i) => (
+          <Link key={i.href} href={i.href} aria-current={i.active ? "page" : undefined}>
+            <Icon name={i.icon} size={24} />
+            <span>{i.label}</span>
+          </Link>
+        ))}
+      </nav>
+      <aside className="sidebar" aria-label={t(UI.appName)}>
+        <Link href="/" className="brand">
+          <Mascot size={34} />
+          <span>{t(UI.appName)}</span>
         </Link>
-      ))}
-    </nav>
+        <nav className="sidebar-list">
+          {items.map((i) => (
+            <Link
+              key={i.href}
+              href={i.href}
+              className="sidebar-item"
+              aria-current={i.href === "/" ? (path === "/" ? "page" : undefined) : i.active ? "page" : undefined}
+            >
+              <Icon name={i.icon} size={20} />
+              <span>{i.label}</span>
+            </Link>
+          ))}
+        </nav>
+        <p className="sidebar-head">{t({ lv: "Klases", ru: "Классы" })}</p>
+        <nav className="sidebar-list">
+          {GRADES.map((g) => {
+            const earned = g.topics.reduce((s, tp) => s + Math.min(stars(g.grade, tp.id), 3), 0);
+            const here = path === `/klase/${g.grade}` || path.startsWith(`/klase/${g.grade}/`);
+            return (
+              <Link
+                key={g.grade}
+                href={`/klase/${g.grade}`}
+                className="sidebar-item"
+                aria-current={here ? "page" : undefined}
+                {...gradeColorAttrs(g.grade)}
+              >
+                <span className="sidebar-num">{g.grade}</span>
+                <span className="sidebar-title">{t(g.title)}</span>
+                {earned > 0 && (
+                  <small aria-label={`${earned} ${t(UI.stars)}`}>
+                    <Icon name="star" size={12} filled className="on" />
+                    {earned}
+                  </small>
+                )}
+              </Link>
+            );
+          })}
+        </nav>
+      </aside>
+    </>
   );
 }

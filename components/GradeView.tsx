@@ -4,11 +4,12 @@ import Link from "next/link";
 import { getGrade } from "@/lib/curriculum";
 import { stageOf } from "@/lib/skola2030";
 import { type T, UI } from "@/lib/i18n";
-import { readableOn } from "@/lib/color";
+import { gradeAttrs } from "@/lib/grade-ui";
 import { useApp } from "./AppProvider";
 import { BottomNav, TopBar } from "./Chrome";
 import { Icon } from "./Icon";
 import { Mascot } from "./Mascot";
+import { TopicGlyph } from "./TopicGlyph";
 import { persona } from "@/lib/persona";
 
 const KIND_LABEL: Record<string, T> = {
@@ -24,7 +25,7 @@ export function GradeView({ grade }: { grade: number }) {
   const stage = stageOf(grade);
 
   return (
-    <div className="page" style={{ "--c": g.color, "--on-c": readableOn(g.color) } as React.CSSProperties}>
+    <div className="page" {...gradeAttrs(g.grade)}>
       <TopBar back="/" backLabel={t(UI.home)} title={`${g.grade}. ${t(UI.grade)}`} />
       <main className="content">
         <header className="large-title">
@@ -52,7 +53,7 @@ export function GradeView({ grade }: { grade: number }) {
                 <li key={topic.id}>
                   <Link href={`/klase/${grade}/${topic.id}`} className="row">
                     <span className="row-icon" aria-hidden="true">
-                      {topic.icon}
+                      <TopicGlyph topicId={topic.id} />
                     </span>
                     <span className="row-text">
                       <strong>{t(topic.title)}</strong>

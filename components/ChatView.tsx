@@ -3,6 +3,7 @@
 import { useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { getGrade, getTopic } from "@/lib/curriculum";
+import { gradeAttrs } from "@/lib/grade-ui";
 import { type T, UI } from "@/lib/i18n";
 import { useApp } from "./AppProvider";
 import { BottomNav, TopBar } from "./Chrome";
@@ -53,7 +54,7 @@ export function ChatView() {
   const helperUI = personaUI(helper);
 
   return (
-    <div className="page chat-page" style={{ "--c": color } as React.CSSProperties}>
+    <div className="page chat-page" {...gradeAttrs(g?.grade)}>
       <TopBar
         back={topic && g ? `/klase/${g.grade}/${topic.id}` : "/"}
         backLabel={topic ? t(topic.title) : t(UI.home)}
@@ -64,7 +65,7 @@ export function ChatView() {
           <strong>{t(helperUI.chatTitle)}</strong>
           {topic && g && (
             <small>
-              {t(UI.chatContext)}: {g.grade}. {t(UI.grade)} · {topic.icon} {t(topic.title)}
+              {t(UI.chatContext)}: {g.grade}. {t(UI.grade)} · {t(topic.title)}
             </small>
           )}
         </div>

@@ -28,7 +28,7 @@
   --tint: #5856d6;
   --tint-text: #4b49c8;
   --on-tint: #ffffff;
-  --green: #248a3d;
+  --green: #1e7a34;
   --green-bg: rgba(52, 199, 89, 0.14);
   --red: #d70015;
   --red-bg: rgba(255, 59, 48, 0.12);
@@ -37,6 +37,45 @@
   --shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 4px 16px rgba(0, 0, 0, 0.05);
   --paper: #fbfbfe;
   --mascot-line: #2b2d42;
+
+  /* Grade colours, precomputed per theme: -text holds 4.5:1 on cards and on its -soft tint,
+     on-grade-N is the label on a solid fill, and dark fills hold 3:1 on black. */
+  --grade-1: #ff8a3d;
+  --grade-1-text: #a35827;
+  --grade-1-soft: #ffefe4;
+  --on-grade-1: #1c1c1e;
+  --grade-2: #ffb703;
+  --grade-2-text: #8f6602;
+  --grade-2-soft: #fff5dc;
+  --on-grade-2: #1c1c1e;
+  --grade-3: #2ec4b6;
+  --grade-3-text: #1d7a71;
+  --grade-3-soft: #e2f7f5;
+  --on-grade-3: #1c1c1e;
+  --grade-4: #4cc9f0;
+  --grade-4-text: #2c758b;
+  --grade-4-soft: #e6f7fd;
+  --on-grade-4: #1c1c1e;
+  --grade-5: #4361ee;
+  --grade-5-text: #3f5be0;
+  --grade-5-soft: #e5e9fd;
+  --on-grade-5: #ffffff;
+  --grade-6: #7b2ff7;
+  --grade-6-text: #7b2ff7;
+  --grade-6-soft: #ede2fe;
+  --on-grade-6: #ffffff;
+  --grade-7: #b5179e;
+  --grade-7-text: #b5179e;
+  --grade-7-soft: #f5dff1;
+  --on-grade-7: #ffffff;
+  --grade-8: #f72585;
+  --grade-8-text: #c61e6a;
+  --grade-8-soft: #fee0ee;
+  --on-grade-8: #1c1c1e;
+  --grade-9: #3a0ca3;
+  --grade-9-text: #3a0ca3;
+  --grade-9-soft: #e3ddf2;
+  --on-grade-9: #ffffff;
 
   /* Grade color (set per page) and its readable text variant */
   --c: var(--tint);
@@ -92,6 +131,42 @@
     --hint-bg: rgba(255, 214, 10, 0.16);
     --shadow: none;
     --mascot-line: #d1d1d6;
+    --grade-1: #ff8a3d;
+    --grade-1-text: #ff8a3d;
+    --grade-1-soft: #493224;
+    --on-grade-1: #1c1c1e;
+    --grade-2: #ffb703;
+    --grade-2-text: #ffb703;
+    --grade-2-soft: #493b19;
+    --on-grade-2: #1c1c1e;
+    --grade-3: #2ec4b6;
+    --grade-3-text: #2ec4b6;
+    --grade-3-soft: #203e3c;
+    --on-grade-3: #1c1c1e;
+    --grade-4: #4cc9f0;
+    --grade-4-text: #4cc9f0;
+    --grade-4-soft: #263f48;
+    --on-grade-4: #1c1c1e;
+    --grade-5: #4361ee;
+    --grade-5-text: #788df3;
+    --grade-5-soft: #242a48;
+    --on-grade-5: #ffffff;
+    --grade-6: #7b2ff7;
+    --grade-6-text: #a876fa;
+    --grade-6-soft: #2f2049;
+    --on-grade-6: #ffffff;
+    --grade-7: #b5179e;
+    --grade-7-text: #d06bc1;
+    --grade-7-soft: #3b1b38;
+    --on-grade-7: #ffffff;
+    --grade-8: #f72585;
+    --grade-8-text: #f955a0;
+    --grade-8-soft: #481e33;
+    --on-grade-8: #1c1c1e;
+    --grade-9: #6946b9;
+    --grade-9-text: #9c85d1;
+    --grade-9-soft: #2b243d;
+    --on-grade-9: #ffffff;
     color-scheme: dark;
   }
 }
@@ -117,6 +192,42 @@
   --hint-bg: rgba(255, 214, 10, 0.16);
   --shadow: none;
   --mascot-line: #d1d1d6;
+  --grade-1: #ff8a3d;
+  --grade-1-text: #ff8a3d;
+  --grade-1-soft: #493224;
+  --on-grade-1: #1c1c1e;
+  --grade-2: #ffb703;
+  --grade-2-text: #ffb703;
+  --grade-2-soft: #493b19;
+  --on-grade-2: #1c1c1e;
+  --grade-3: #2ec4b6;
+  --grade-3-text: #2ec4b6;
+  --grade-3-soft: #203e3c;
+  --on-grade-3: #1c1c1e;
+  --grade-4: #4cc9f0;
+  --grade-4-text: #4cc9f0;
+  --grade-4-soft: #263f48;
+  --on-grade-4: #1c1c1e;
+  --grade-5: #4361ee;
+  --grade-5-text: #788df3;
+  --grade-5-soft: #242a48;
+  --on-grade-5: #ffffff;
+  --grade-6: #7b2ff7;
+  --grade-6-text: #a876fa;
+  --grade-6-soft: #2f2049;
+  --on-grade-6: #ffffff;
+  --grade-7: #b5179e;
+  --grade-7-text: #d06bc1;
+  --grade-7-soft: #3b1b38;
+  --on-grade-7: #ffffff;
+  --grade-8: #f72585;
+  --grade-8-text: #f955a0;
+  --grade-8-soft: #481e33;
+  --on-grade-8: #1c1c1e;
+  --grade-9: #6946b9;
+  --grade-9-text: #9c85d1;
+  --grade-9-soft: #2b243d;
+  --on-grade-9: #ffffff;
   color-scheme: dark;
 }
 
@@ -131,6 +242,41 @@
 .exercise-tutor {
   --c-text: color-mix(in oklab, var(--c) 68%, var(--label));
   --c-soft: color-mix(in oklab, var(--c) 14%, var(--bg-elevated));
+}
+
+/* A grade's own colours, precomputed per theme (placed after the rule above, so they win). */
+[data-grade="1"] { --c: var(--grade-1); --c-text: var(--grade-1-text); --c-soft: var(--grade-1-soft); --on-c: var(--on-grade-1); }
+[data-grade="2"] { --c: var(--grade-2); --c-text: var(--grade-2-text); --c-soft: var(--grade-2-soft); --on-c: var(--on-grade-2); }
+[data-grade="3"] { --c: var(--grade-3); --c-text: var(--grade-3-text); --c-soft: var(--grade-3-soft); --on-c: var(--on-grade-3); }
+[data-grade="4"] { --c: var(--grade-4); --c-text: var(--grade-4-text); --c-soft: var(--grade-4-soft); --on-c: var(--on-grade-4); }
+[data-grade="5"] { --c: var(--grade-5); --c-text: var(--grade-5-text); --c-soft: var(--grade-5-soft); --on-c: var(--on-grade-5); }
+[data-grade="6"] { --c: var(--grade-6); --c-text: var(--grade-6-text); --c-soft: var(--grade-6-soft); --on-c: var(--on-grade-6); }
+[data-grade="7"] { --c: var(--grade-7); --c-text: var(--grade-7-text); --c-soft: var(--grade-7-soft); --on-c: var(--on-grade-7); }
+[data-grade="8"] { --c: var(--grade-8); --c-text: var(--grade-8-text); --c-soft: var(--grade-8-soft); --on-c: var(--on-grade-8); }
+[data-grade="9"] { --c: var(--grade-9); --c-text: var(--grade-9-text); --c-soft: var(--grade-9-soft); --on-c: var(--on-grade-9); }
+
+/*
+ * The interface grows up with the child, like Cipariņš: grades 1–3 read larger and tap bigger,
+ * grades 7–9 are a touch denser. Everything below is in rem, so Dynamic Type still scales it.
+ */
+[data-band="young"] {
+  --t-large: 700 2.2rem/1.15 var(--font);
+  --t-title1: 700 1.85rem/1.2 var(--font);
+  --t-title3: 700 1.4rem/1.3 var(--font);
+  --t-headline: 600 1.12rem/1.35 var(--font);
+  --t-body: 400 1.125rem/1.45 var(--font);
+  --t-callout: 400 1.04rem/1.4 var(--font);
+  --t-subhead: 400 0.96rem/1.35 var(--font);
+  --t-footnote: 400 0.84rem/1.35 var(--font);
+  --tap: 52px;
+  --choice-h: 64px;
+  font: var(--t-body);
+}
+[data-band="teen"] {
+  --t-large: 700 1.9rem/1.2 var(--font);
+  --t-title3: 600 1.12rem/1.3 var(--font);
+  --t-body: 400 0.97rem/1.45 var(--font);
+  font: var(--t-body);
 }
 
 /* Safari: the root size follows the reader's iOS text size setting (Dynamic Type). */
@@ -153,6 +299,8 @@ body {
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
   -webkit-tap-highlight-color: transparent;
+  /* Layout answers to the app's own width (a container), so a device frame can host it too. */
+  container-type: inline-size;
 }
 
 a {
@@ -419,7 +567,7 @@ h3 {
   gap: 2px;
   min-height: 49px;
   border-radius: 12px;
-  color: var(--label-3);
+  color: var(--label-2);
   font: var(--t-caption);
 }
 
@@ -1388,7 +1536,7 @@ input[type="range"]::-moz-range-thumb {
 }
 
 .choice {
-  min-height: 52px;
+  min-height: var(--choice-h, 52px);
   padding: 10px;
   border: 2px solid transparent;
   border-radius: 12px;
@@ -1876,7 +2024,7 @@ input[type="range"]::-moz-range-thumb {
 }
 .field > small {
   font: var(--t-footnote);
-  color: var(--label-3);
+  color: var(--label-2);
 }
 .field input {
   min-height: var(--tap);
@@ -1921,7 +2069,7 @@ input[type="range"]::-moz-range-thumb {
 }
 .grade-pick button[aria-pressed="true"] {
   background: var(--c);
-  color: #fff;
+  color: var(--on-c);
 }
 @media (max-width: 400px) {
   .grade-pick {
@@ -2012,7 +2160,7 @@ input[type="range"]::-moz-range-thumb {
 }
 .duel-player small {
   font: var(--t-caption);
-  color: var(--label-3);
+  color: var(--label-2);
   text-transform: uppercase;
 }
 .duel-player strong {
@@ -2045,7 +2193,7 @@ input[type="range"]::-moz-range-thumb {
 }
 .duel-clock small {
   font: var(--t-caption);
-  color: var(--label-3);
+  color: var(--label-2);
 }
 .duel-timebar {
   grid-column: 1 / -1;
@@ -2067,7 +2215,7 @@ input[type="range"]::-moz-range-thumb {
   gap: 4px;
   margin-left: auto;
   font: var(--t-footnote);
-  color: var(--label-3);
+  color: var(--label-2);
 }
 .duel-card .duel-summary {
   font: var(--t-callout);
@@ -2091,5 +2239,306 @@ input[type="range"]::-moz-range-thumb {
   .duel-count,
   .trophy-frame {
     animation: none;
+  }
+}
+
+/* ---------- topic glyphs ---------- */
+.row-icon,
+.title-icon {
+  color: var(--c-text);
+}
+.row-icon.big {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+}
+
+/* ---------- home: onboarding once, then "continue" ---------- */
+.pager-arrow:disabled {
+  opacity: 0.35;
+}
+.onboard-skip {
+  margin-top: 4px;
+  min-height: var(--tap);
+  padding: 0 12px;
+  border: 0;
+  background: none;
+  color: var(--label-2);
+  font: var(--t-subhead);
+  font-weight: 600;
+}
+.continue-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border-radius: var(--radius-card);
+  background: var(--bg-elevated);
+  box-shadow: var(--shadow);
+  transition: transform var(--press) var(--ease-out);
+}
+.continue-card:active {
+  transform: scale(0.98);
+}
+.continue-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.continue-text small {
+  font: var(--t-footnote);
+  font-weight: 700;
+  color: var(--c-text);
+}
+.continue-text strong {
+  font: var(--t-title3);
+  font-weight: 700;
+}
+.continue-go {
+  display: grid;
+  place-items: center;
+  width: var(--tap);
+  height: var(--tap);
+  border-radius: 50%;
+  background: var(--c);
+  color: var(--on-c);
+}
+.grade-stars {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 8px;
+  font: var(--t-footnote);
+  font-variant-numeric: tabular-nums;
+  color: var(--label-2);
+}
+.grade-stars b {
+  color: var(--label);
+  font-weight: 800;
+}
+.grade-stars .icon {
+  color: var(--fill-strong);
+}
+.grade-stars .icon.on {
+  color: var(--yellow);
+}
+
+/* ---------- topic: jump to a part ---------- */
+.topic-jump {
+  position: sticky;
+  top: calc(var(--navbar-h, 52px) + env(safe-area-inset-top, 0px));
+  z-index: 25;
+  margin: -12px calc(-1 * var(--gutter)) -8px;
+  padding: 8px var(--gutter);
+  background: var(--material);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  backdrop-filter: saturate(180%) blur(20px);
+}
+.topic-cols,
+.topic-learn,
+.topic-practice {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+.topic-cols [id] {
+  scroll-margin-top: calc(var(--navbar-h, 52px) + 64px);
+}
+
+/* ---------- exercise: keypad and celebration ---------- */
+.keypad {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+.keypad .key {
+  min-height: max(56px, var(--tap));
+  border: 0;
+  border-radius: var(--radius-row);
+  background: var(--fill);
+  color: var(--label);
+  font: var(--t-title2);
+  font-variant-numeric: tabular-nums;
+  transition: transform var(--press) var(--ease-out), background-color 200ms ease;
+}
+.keypad .key:active {
+  transform: scale(0.95);
+  background: var(--fill-strong);
+}
+.keypad .key.erase {
+  color: var(--label-2);
+}
+.keypad .key:disabled {
+  opacity: 0.4;
+}
+.feedback-text {
+  display: flex;
+  flex-direction: column;
+}
+.feedback .milestone {
+  font: var(--t-subhead);
+  font-weight: 700;
+}
+.feedback.celebrate svg[role="img"] {
+  animation: cheer 600ms var(--ease-out);
+}
+@keyframes cheer {
+  0% {
+    transform: scale(0.6) rotate(-8deg);
+  }
+  60% {
+    transform: scale(1.12) rotate(4deg);
+  }
+  100% {
+    transform: none;
+  }
+}
+
+/* ---------- wide screens: sidebar and two-column topics ---------- */
+.sidebar {
+  display: none;
+}
+@container (min-width: 1024px) {
+  .tabbar,
+  .topic-jump,
+  .navbar-side > .brand {
+    display: none;
+  }
+  .sidebar {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 30;
+    width: 248px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 14px 12px 20px;
+    overflow-y: auto;
+    background: var(--bg-elevated);
+    box-shadow: inset -0.5px 0 0 var(--separator);
+  }
+  .sidebar .brand {
+    padding: 0 8px 10px;
+  }
+  .sidebar-head {
+    margin: 14px 0 2px;
+    padding: 0 12px;
+    font: var(--t-footnote);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: var(--label-2);
+  }
+  .sidebar-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .sidebar-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 40px;
+    padding: 0 12px;
+    border-radius: 10px;
+    font: var(--t-subhead);
+    font-weight: 600;
+    color: var(--label);
+    transition: background-color 200ms ease;
+  }
+  .sidebar-item .icon {
+    color: var(--label-2);
+  }
+  .sidebar-item[aria-current="page"] {
+    background: var(--c-soft, var(--fill));
+    color: var(--c-text, var(--tint-text));
+  }
+  .sidebar-item[aria-current="page"] .icon {
+    color: inherit;
+  }
+  .sidebar-num {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 7px;
+    background: var(--c);
+    color: var(--on-c);
+    font: var(--t-footnote);
+    font-weight: 800;
+  }
+  .sidebar-title {
+    flex: 1;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .sidebar-item small {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    font: var(--t-caption);
+    color: var(--label-2);
+    font-variant-numeric: tabular-nums;
+  }
+  .sidebar-item small .icon {
+    color: var(--yellow);
+  }
+  .page {
+    max-width: none;
+    margin: 0 0 0 248px;
+    padding-bottom: 40px;
+  }
+  .navbar {
+    padding-inline: 32px;
+  }
+  .content {
+    width: 100%;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 8px 32px 40px;
+  }
+  .content.duel {
+    max-width: 640px;
+  }
+  .grade-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+  }
+  .topic-cols {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+    align-items: start;
+    gap: 28px;
+  }
+  .chat-page .chat-head,
+  .chat-page .chat-scroll,
+  .chat-page .chat-input,
+  .chat-page .disclaimer {
+    width: min(760px, 100% - 64px);
+    margin-inline: auto;
+  }
+  .sheet {
+    left: 248px;
+  }
+}
+@media (hover: hover) and (pointer: fine) {
+  .sidebar-item:hover {
+    background-color: var(--fill);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .feedback.celebrate svg[role="img"] {
+    animation: none;
+  }
+  .continue-card:active,
+  .keypad .key:active {
+    transform: none;
   }
 }

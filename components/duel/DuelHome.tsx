@@ -4,6 +4,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { GRADES } from "@/lib/curriculum";
 import { DURATIONS, MAX_NAME, cleanCode, cleanName } from "@/lib/duel";
+import { gradeColorAttrs } from "@/lib/grade-ui";
 import type { T } from "@/lib/i18n";
 import { useApp } from "../AppProvider";
 import { BottomNav, TopBar } from "../Chrome";
@@ -145,7 +146,7 @@ export function DuelHome() {
                       key={g.grade}
                       type="button"
                       aria-pressed={grade === g.grade}
-                      style={{ "--c": g.color } as React.CSSProperties}
+                      {...gradeColorAttrs(g.grade)}
                       onClick={() => setGrade(g.grade)}
                     >
                       {g.grade}.

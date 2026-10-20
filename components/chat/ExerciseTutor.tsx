@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { gradeAttrs } from "@/lib/grade-ui";
 import { type T, UI } from "@/lib/i18n";
 import type { ExerciseContext } from "@/lib/tutor";
 import { useApp } from "../AppProvider";
@@ -67,7 +68,7 @@ export function ExerciseTutor({
   return (
     <Sheet host={host} label={t(helperUI.helps)} onClose={onClose}>
       {({ grab, close }) => (
-        <div className="exercise-tutor" style={{ "--c": color } as React.CSSProperties}>
+        <div className="exercise-tutor" {...gradeAttrs(grade)}>
           <div className="exercise-tutor-head" {...grab}>
             <Mascot size={40} color={color} grade={grade} mood={busy ? "thinking" : "happy"} />
             <div>

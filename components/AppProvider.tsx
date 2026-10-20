@@ -4,6 +4,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import { type Lang, type T, tr } from "@/lib/i18n";
 
 type Progress = Record<string, number>; // "grade/topicId" -> stars earned
+type Visit = { grade: number; topicId: string };
 
 type AppState = {
   lang: Lang;
@@ -12,6 +13,14 @@ type AppState = {
   stars: (grade: number, topicId: string) => number;
   addStar: (grade: number, topicId: string) => void;
   totalStars: number;
+  /** Browser storage has been read; until then onboarding and "continue" stay hidden. */
+  ready: boolean;
+  /** The intro carousel has been seen (it shows once, on the first visit). */
+  onboarded: boolean;
+  finishOnboarding: () => void;
+  /** The topic opened last, for the home screen's "continue" card. */
+  lastTopic: Visit | null;
+  visitTopic: (grade: number, topicId: string) => void;
 };
 
 const AppContext = createContext<AppState | null>(null);
@@ -37,12 +46,18 @@ function save(key: string, value: unknown) {
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const [lang, setLangState] = useState<Lang>("lv");
   const [progress, setProgress] = useState<Progress>({});
+  const [ready, setReady] = useState(false);
+  const [onboarded, setOnboarded] = useState(false);
+  const [lastTopic, setLastTopic] = useState<Visit | null>(null);
 
   useEffect(() => {
     const storedLang = load<Lang | null>("ciparini.lang", null);
     if (storedLang === "lv" || storedLang === "ru") setLangState(storedLang);
     else if (navigator.language.toLowerCase().startsWith("ru")) setLangState("ru");
     setProgress(load<Progress>("ciparini.progress", {}));
+    setOnboarded(load<boolean>("ciparini.onboarded", false));
+    setLastTopic(load<Visit | null>("ciparini.lastTopic", null));
+    setReady(true);
   }, []);
 
   useEffect(() => {
@@ -63,6 +78,17 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
+  const finishOnboarding = useCallback(() => {
+    setOnboarded(true);
+    save("ciparini.onboarded", true);
+  }, []);
+
+  const visitTopic = useCallback((grade: number, topicId: string) => {
+    const visit = { grade, topicId };
+    setLastTopic(visit);
+    save("ciparini.lastTopic", visit);
+  }, []);
+
   const value = useMemo<AppState>(
     () => ({
       lang,
@@ -71,8 +97,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       stars: (grade, topicId) => progress[`${grade}/${topicId}`] ?? 0,
       addStar,
       totalStars: Object.values(progress).reduce((s, n) => s + n, 0),
+      ready,
+      onboarded,
+      finishOnboarding,
+      lastTopic,
+      visitTopic,
     }),
-    [lang, setLang, progress, addStar],
+    [lang, setLang, progress, addStar, ready, onboarded, finishOnboarding, lastTopic, visitTopic],
   );
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

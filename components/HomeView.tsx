@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { GRADES } from "@/lib/curriculum";
+import { GRADES, getGrade, getTopic } from "@/lib/curriculum";
+import { gradeColorAttrs } from "@/lib/grade-ui";
 import { type T, UI } from "@/lib/i18n";
 import { useApp } from "./AppProvider";
 import { BottomNav, TopBar } from "./Chrome";
@@ -12,6 +13,7 @@ import { persona, personaUI } from "@/lib/persona";
 
 const helperUI = personaUI(persona());
 import { BooksScene, BusScene, CityScene } from "./Scenes";
+import { TopicGlyph } from "./TopicGlyph";
 
 const SLIDES: { scene: React.ReactNode; title: T; text: T }[] = [
   {
@@ -41,48 +43,94 @@ const SLIDES: { scene: React.ReactNode; title: T; text: T }[] = [
 ];
 
 export function HomeView() {
-  const { t, stars } = useApp();
+  const { t, stars, ready, onboarded, finishOnboarding, lastTopic } = useApp();
   const [slide, setSlide] = useState(0);
   const current = SLIDES[slide];
+  const last = slide === SLIDES.length - 1;
+  const resume = lastTopic && getTopic(lastTopic.grade, lastTopic.topicId);
+  const resumeGrade = lastTopic && getGrade(lastTopic.grade);
 
   return (
     <div className="page">
       <TopBar />
       <main className="content">
-        <section className="onboard card-phone" aria-roledescription="carousel">
-          <div className="onboard-art">{current.scene}</div>
-          <div className="onboard-body">
-            <h1>{t(current.title)}</h1>
-            <p>{t(current.text)}</p>
-            <div className="pager">
-              <button
-                className="pager-arrow"
-                onClick={() => setSlide((s) => (s + SLIDES.length - 1) % SLIDES.length)}
-                aria-label={t(UI.back)}
-              >
-                <Icon name="chevronLeft" size={20} />
-              </button>
-              <div className="dots">
-                {SLIDES.map((_, i) => (
-                  <button
+        {/* The intro shows once; after that the home screen leads with the child's own work. */}
+        {ready && !onboarded && (
+          <section className="onboard card-phone" aria-roledescription="carousel">
+            <div className="onboard-art">{current.scene}</div>
+            <div className="onboard-body">
+              <h1>{t(current.title)}</h1>
+              <p>{t(current.text)}</p>
+              <div className="pager">
+                <button
+                  className="pager-arrow"
+                  onClick={() => setSlide((s) => (s + SLIDES.length - 1) % SLIDES.length)}
+                  aria-label={t(UI.back)}
+                  disabled={slide === 0}
+                >
+                  <Icon name="chevronLeft" size={20} />
+                </button>
+                <div className="dots">
+                  {SLIDES.map((_, i) => (
+                    <button
+                      key={i}
+                      className={i === slide ? "dot active" : "dot"}
+                      onClick={() => setSlide(i)}
+                      aria-label={`${i + 1} / ${SLIDES.length}`}
+                      aria-pressed={i === slide}
+                    />
+                  ))}
+                </div>
+                {last ? (
+                  <button className="btn primary" onClick={finishOnboarding}>
+                    {t({ lv: "Sākam!", ru: "Начнём!" })}
+                  </button>
+                ) : (
+                  <button className="pager-arrow primary" onClick={() => setSlide((s) => s + 1)} aria-label={t(UI.next)}>
+                    <Icon name="chevronRight" size={20} />
+                  </button>
+                )}
+              </div>
+              {!last && (
+                <button className="onboard-skip" onClick={finishOnboarding}>
+                  {t({ lv: "Izlaist", ru: "Пропустить" })}
+                </button>
+              )}
+            </div>
+          </section>
+        )}
+
+        {ready && onboarded && resume && resumeGrade && (
+          <Link
+            href={`/klase/${resumeGrade.grade}/${resume.id}`}
+            className="continue-card"
+            {...gradeColorAttrs(resumeGrade.grade)}
+          >
+            <span className="row-icon big" aria-hidden="true">
+              <TopicGlyph topicId={resume.id} size={28} />
+            </span>
+            <span className="continue-text">
+              <small>
+                {t({ lv: "Turpināt", ru: "Продолжить" })} · {resumeGrade.grade}. {t(UI.grade)}
+              </small>
+              <strong>{t(resume.title)}</strong>
+              <span className="row-stars" aria-label={`${stars(resumeGrade.grade, resume.id)} ${t(UI.stars)}`}>
+                {[0, 1, 2].map((i) => (
+                  <Icon
                     key={i}
-                    className={i === slide ? "dot active" : "dot"}
-                    onClick={() => setSlide(i)}
-                    aria-label={`${i + 1} / ${SLIDES.length}`}
-                    aria-pressed={i === slide}
+                    name="star"
+                    size={14}
+                    filled={i < stars(resumeGrade.grade, resume.id)}
+                    className={i < stars(resumeGrade.grade, resume.id) ? "on" : ""}
                   />
                 ))}
-              </div>
-              <button
-                className="pager-arrow primary"
-                onClick={() => setSlide((s) => (s + 1) % SLIDES.length)}
-                aria-label={t(UI.next)}
-              >
-                <Icon name="chevronRight" size={20} />
-              </button>
-            </div>
-          </div>
-        </section>
+              </span>
+            </span>
+            <span className="continue-go" aria-hidden="true">
+              <Icon name="chevronRight" size={22} />
+            </span>
+          </Link>
+        )}
 
         <div className="section-head">
           <Mascot size={52} mood="cheer" />
@@ -94,19 +142,17 @@ export function HomeView() {
             const earned = g.topics.reduce((s, tp) => s + Math.min(stars(g.grade, tp.id), 3), 0);
             const max = g.topics.length * 3;
             return (
-              <Link
-                key={g.grade}
-                href={`/klase/${g.grade}`}
-                className="grade-card"
-                style={{ "--c": g.color } as React.CSSProperties}
-              >
+              <Link key={g.grade} href={`/klase/${g.grade}`} className="grade-card" {...gradeColorAttrs(g.grade)}>
                 <Mascot size={44} color={g.color} grade={g.grade} className="grade-mascot" />
                 <span className="grade-num">{g.grade}.</span>
                 <span className="grade-label">{t(UI.grade)}</span>
                 <strong>{t(g.title)}</strong>
                 <small>{t(g.subtitle)}</small>
-                <span className="grade-progress" aria-label={`${earned}/${max}`}>
-                  <span style={{ width: `${(earned / max) * 100}%` }} />
+                <span className="grade-stars" aria-label={`${earned} / ${max} ${t(UI.stars)}`}>
+                  <Icon name="star" size={14} filled={earned > 0} className={earned > 0 ? "on" : ""} />
+                  <span>
+                    <b>{earned}</b>/{max}
+                  </span>
                 </span>
               </Link>
             );

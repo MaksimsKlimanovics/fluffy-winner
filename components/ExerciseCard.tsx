@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { type Exercise, type GeneratorId, checkAnswer, formatAnswer, generateExercise, newSeed } from "@/lib/exercises";
+import { gradeColorAttrs, usesKeypad } from "@/lib/grade-ui";
 import { UI } from "@/lib/i18n";
 import type { ExerciseContext } from "@/lib/tutor";
 import { useApp } from "./AppProvider";
@@ -11,6 +12,34 @@ import { persona, personaUI } from "@/lib/persona";
 import { ExerciseTutor } from "./chat/ExerciseTutor";
 
 type Status = "idle" | "correct" | "wrong";
+
+/** Streaks worth a small celebration. */
+const MILESTONES = [3, 5, 10, 20];
+
+/**
+ * On-screen number pad for grades 1–2: big keys a small hand can hit, no system keyboard
+ * covering half the screen, and only the characters an answer can contain.
+ */
+function Keypad({ onKey, disabled }: { onKey: (key: string) => void; disabled: boolean }) {
+  const { t } = useApp();
+  const keys = ["1", "2", "3", "4", "5", "6", "7", "8", "9", ",", "0", "⌫"];
+  return (
+    <div className="keypad" role="group" aria-label={t({ lv: "Ciparu tastatūra", ru: "Цифровая клавиатура" })}>
+      {keys.map((k) => (
+        <button
+          key={k}
+          type="button"
+          className={k === "⌫" ? "key erase" : "key"}
+          onClick={() => onKey(k)}
+          disabled={disabled}
+          aria-label={k === "⌫" ? t({ lv: "Dzēst", ru: "Стереть" }) : k}
+        >
+          {k}
+        </button>
+      ))}
+    </div>
+  );
+}
 
 export function ExerciseCard({
   generator,
@@ -73,6 +102,8 @@ export function ExerciseCard({
 
   if (!task) return <div className="exercise skeleton" />;
   const { ex, seed } = task;
+  const keypad = usesKeypad(grade);
+  const milestone = status === "correct" && !showSolution && MILESTONES.includes(streak);
 
   const submit = (value: string) => {
     if (status === "correct" || !value.trim()) return;
@@ -91,7 +122,7 @@ export function ExerciseCard({
   };
 
   return (
-    <div ref={cardRef} className={`exercise status-${status}`} style={{ "--c": color } as React.CSSProperties}>
+    <div ref={cardRef} className={`exercise status-${status}`} {...gradeColorAttrs(grade)}>
       <div className="exercise-head">
         <span className="badge">{t(UI.practice)}</span>
         {streak > 1 && (
@@ -128,7 +159,8 @@ export function ExerciseCard({
           }}
         >
           <input
-            inputMode="decimal"
+            // With the on-screen pad, keep the system keyboard down (a hardware keyboard still types).
+            inputMode={keypad ? "none" : "decimal"}
             autoComplete="off"
             value={input}
             onChange={(e) => {
@@ -145,10 +177,27 @@ export function ExerciseCard({
           </button>
         </form>
       )}
+      {keypad && ex.kind !== "choice" && (
+        <Keypad
+          disabled={status === "correct"}
+          onKey={(k) => {
+            if (status === "wrong") setStatus("idle");
+            setInput((v) => (k === "⌫" ? v.slice(0, -1) : v.length < 6 ? v + k : v));
+          }}
+        />
+      )}
 
       {status === "correct" && (
-        <div className="feedback ok" role="status">
-          <Mascot size={44} mood="cheer" color={color} grade={grade} /> {t(UI.correct)}
+        <div className={milestone ? "feedback ok celebrate" : "feedback ok"} role="status">
+          <Mascot size={milestone ? 64 : 44} mood="cheer" color={color} grade={grade} />
+          <span className="feedback-text">
+            {t(UI.correct)}
+            {milestone && (
+              <small className="milestone">
+                {t({ lv: `${streak} pēc kārtas — tā turpināt!`, ru: `${streak} подряд — так держать!` })}
+              </small>
+            )}
+          </span>
           {!showSolution && <Icon name="star" size={18} filled className="star-earned" label={t(UI.stars)} />}
         </div>
       )}
