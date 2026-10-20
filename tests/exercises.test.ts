@@ -1,7 +1,18 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { GRADES } from "../lib/curriculum";
-import { checkAnswer, formatAnswer, generators, parseNumber } from "../lib/exercises";
+import { GRADES, realCases } from "../lib/curriculum";
+import {
+  MAX_SEED,
+  PROBLEMS_PER_TOPIC,
+  checkAnswer,
+  formatAnswer,
+  generateExercise,
+  generators,
+  parseNumber,
+  problemKey,
+  problemSet,
+} from "../lib/exercises";
+import { MORE_CASES } from "../lib/real-life";
 
 const RUNS = 400;
 
@@ -52,7 +63,7 @@ test("every topic points at an existing generator and has bilingual content", ()
       assert.ok(t.generator in generators, `${t.id}: unknown generator`);
       assert.ok(!ids.has(`${g.grade}/${t.id}`), `duplicate topic ${t.id}`);
       ids.add(`${g.grade}/${t.id}`);
-      for (const text of [t.title, t.why, t.realCase.title, t.realCase.text, ...t.theory, ...t.askAi]) {
+      for (const text of [t.title, t.why, ...realCases(t).flatMap((c) => [c.title, c.text]), ...t.theory, ...t.askAi]) {
         assert.ok(text.lv && text.ru, `${t.id}: missing translation`);
       }
     }
@@ -61,6 +72,32 @@ test("every topic points at an existing generator and has bilingual content", ()
     GRADES.map((g) => g.grade),
     [1, 2, 3, 4, 5, 6, 7, 8, 9],
   );
+});
+
+test("every topic has several real-life examples, and every extra example belongs to a topic", () => {
+  const ids = new Set(GRADES.flatMap((g) => g.topics.map((t) => t.id)));
+  for (const g of GRADES) {
+    for (const t of g.topics) {
+      const cases = realCases(t);
+      assert.ok(cases.length >= 3, `${t.id}: only ${cases.length} real-life examples`);
+      assert.equal(new Set(cases.map((c) => c.title.lv)).size, cases.length, `${t.id}: duplicate example titles`);
+    }
+  }
+  for (const id of Object.keys(MORE_CASES)) assert.ok(ids.has(id), `real-life examples for unknown topic ${id}`);
+});
+
+test(`every topic has a fixed set of ${PROBLEMS_PER_TOPIC} different problems`, () => {
+  for (const g of GRADES) {
+    for (const t of g.topics) {
+      const set = problemSet(t.generator);
+      assert.equal(set.length, PROBLEMS_PER_TOPIC, `${t.id}: only ${set.length} different problems`);
+      const keys = set.map((seed) => problemKey(generateExercise(t.generator, seed)));
+      assert.equal(new Set(keys).size, PROBLEMS_PER_TOPIC, `${t.id}: repeated problems`);
+      for (const seed of set) assert.ok(Number.isInteger(seed) && seed >= 0 && seed <= MAX_SEED);
+      // The same numbered list everywhere (browser, server, mock).
+      assert.deepEqual(problemSet(t.generator), set);
+    }
+  }
 });
 
 test("parseNumber accepts comma decimals, unicode minus and units", () => {

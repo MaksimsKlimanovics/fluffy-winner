@@ -1,5 +1,5 @@
 import Anthropic from "@anthropic-ai/sdk";
-import { buildSystemPrompt, parseExerciseContext, sanitizeHistory } from "@/lib/tutor";
+import { buildSystemPrompt, parseExerciseContext, parseRealCase, sanitizeHistory } from "@/lib/tutor";
 import type { Lang } from "@/lib/i18n";
 
 export const runtime = "nodejs";
@@ -54,6 +54,7 @@ export async function POST(req: Request) {
   const grade = typeof body.grade === "number" ? body.grade : undefined;
   const topicId = typeof body.topicId === "string" ? body.topicId : undefined;
   const exercise = parseExerciseContext(body.exercise, grade, topicId);
+  const realCase = parseRealCase(body.realCase, grade, topicId);
 
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "local";
   if (rateLimited(ip)) return Response.json({ error: text.busy }, { status: 429 });
@@ -79,7 +80,7 @@ export async function POST(req: Request) {
             // recommended fallback model instead of failing the turn.
             betas: ["server-side-fallback-2026-07-01"],
             fallbacks: "default",
-            system: buildSystemPrompt(lang, grade, topicId, exercise),
+            system: buildSystemPrompt(lang, grade, topicId, exercise, realCase),
             messages: history,
           },
           { signal: req.signal },

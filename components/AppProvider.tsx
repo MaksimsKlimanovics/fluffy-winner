@@ -4,6 +4,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import { type Lang, type T, tr } from "@/lib/i18n";
 
 type Progress = Record<string, number>; // "grade/topicId" -> stars earned
+type Solved = Record<string, number[]>; // "grade/topicId" -> numbers of the solved problems (0-based)
 type Visit = { grade: number; topicId: string };
 
 type AppState = {
@@ -13,6 +14,9 @@ type AppState = {
   stars: (grade: number, topicId: string) => number;
   addStar: (grade: number, topicId: string) => void;
   totalStars: number;
+  /** Which of the topic's numbered problems the child has solved. */
+  solved: (grade: number, topicId: string) => number[];
+  markSolved: (grade: number, topicId: string, problem: number) => void;
   /** Browser storage has been read; until then onboarding and "continue" stay hidden. */
   ready: boolean;
   /** The intro carousel has been seen (it shows once, on the first visit). */
@@ -24,6 +28,7 @@ type AppState = {
 };
 
 const AppContext = createContext<AppState | null>(null);
+const EMPTY: number[] = [];
 
 // Browser storage is a per-device convenience only: it may be unavailable
 // (private mode, blocked storage) and the app must work without it.
@@ -46,6 +51,7 @@ function save(key: string, value: unknown) {
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const [lang, setLangState] = useState<Lang>("lv");
   const [progress, setProgress] = useState<Progress>({});
+  const [solvedMap, setSolvedMap] = useState<Solved>({});
   const [ready, setReady] = useState(false);
   const [onboarded, setOnboarded] = useState(false);
   const [lastTopic, setLastTopic] = useState<Visit | null>(null);
@@ -55,6 +61,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     if (storedLang === "lv" || storedLang === "ru") setLangState(storedLang);
     else if (navigator.language.toLowerCase().startsWith("ru")) setLangState("ru");
     setProgress(load<Progress>("ciparini.progress", {}));
+    setSolvedMap(load<Solved>("ciparini.solved", {}));
     setOnboarded(load<boolean>("ciparini.onboarded", false));
     setLastTopic(load<Visit | null>("ciparini.lastTopic", null));
     setReady(true);
@@ -78,6 +85,17 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
+  const markSolved = useCallback((grade: number, topicId: string, problem: number) => {
+    setSolvedMap((prev) => {
+      const key = `${grade}/${topicId}`;
+      const list = prev[key] ?? [];
+      if (list.includes(problem)) return prev;
+      const next = { ...prev, [key]: [...list, problem].sort((a, b) => a - b) };
+      save("ciparini.solved", next);
+      return next;
+    });
+  }, []);
+
   const finishOnboarding = useCallback(() => {
     setOnboarded(true);
     save("ciparini.onboarded", true);
@@ -97,13 +115,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       stars: (grade, topicId) => progress[`${grade}/${topicId}`] ?? 0,
       addStar,
       totalStars: Object.values(progress).reduce((s, n) => s + n, 0),
+      solved: (grade, topicId) => solvedMap[`${grade}/${topicId}`] ?? EMPTY,
+      markSolved,
       ready,
       onboarded,
       finishOnboarding,
       lastTopic,
       visitTopic,
     }),
-    [lang, setLang, progress, addStar, ready, onboarded, finishOnboarding, lastTopic, visitTopic],
+    [lang, setLang, progress, addStar, solvedMap, markSolved, ready, onboarded, finishOnboarding, lastTopic, visitTopic],
   );
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

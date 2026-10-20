@@ -1,7 +1,8 @@
-import { getGrade, getTopic } from "./curriculum";
+import { getGrade, getTopic, realCases } from "./curriculum";
 import { MAX_SEED, type GeneratorId, formatAnswer, generateExercise, isGeneratorId } from "./exercises";
 import type { Lang } from "./i18n";
 import { GROWTH_STORY, persona } from "./persona";
+import type { RealCase } from "./real-life";
 import { STRATEGIES, outcome, stageOf } from "./skola2030";
 
 export const MAX_MESSAGES = 24;
@@ -50,6 +51,7 @@ export function buildSystemPrompt(
   grade?: number,
   topicId?: string,
   exercise?: ExerciseContext,
+  realCase?: number,
 ): string {
   const g = grade ? getGrade(grade) : undefined;
   const helper = persona(g?.grade);
@@ -73,7 +75,8 @@ export function buildSystemPrompt(
         [
           `They are currently studying the topic "${topic.title.lv}" / "${topic.title.ru}".`,
           `Why it matters (app text): ${topic.why.lv}`,
-          `Real-life example shown in the app: ${topic.realCase.text.lv}`,
+          "Real-life examples shown in the app:",
+          ...realCases(topic).map((c, i) => `${i + 1}. ${c.title.lv}: ${c.text.lv}`),
           topic.formula ? `Key formula: ${topic.formula}` : "",
           `Skola2030 outcomes this topic works towards (by the end of grade ${stage}, quoted in Latvian):`,
           ...topic.skola2030.map((code) => `- ${code}. ${outcome(stage, code)}`),
@@ -81,10 +84,32 @@ export function buildSystemPrompt(
           .filter(Boolean)
           .join("\n"),
       );
+      const chosen = realCase === undefined ? undefined : realCases(topic)[realCase];
+      if (chosen) parts.push(buildRealCaseSection(lang, chosen));
     }
   }
   if (exercise) parts.push(buildExerciseSection(lang, exercise));
   return parts.join("\n\n");
+}
+
+/**
+ * The child pressed "Uzzināt vairāk" (learn more) on one of the topic's
+ * real-life examples. The example comes from our own content, looked up by index.
+ */
+function buildRealCaseSection(lang: Lang, c: RealCase): string {
+  return `## The real-life application the child wants to learn more about
+The child opened this chat with the "learn more" button on this example from the app:
+
+<real_case>
+${c.title[lang]}: ${c.text[lang]}
+</real_case>
+
+Tell them more about how the math of this topic is used in exactly this situation:
+- Who uses it and why (people, jobs, everyday moments in Latvia), and what would go wrong without the math.
+- Walk through the example's numbers step by step, then show one more variation with different numbers.
+- Add one surprising or interesting fact about this application, but only if you are sure it is true.
+- End with one short, friendly question or mini-task about this situation that the child can try themselves, within their grade's number range.
+Keep to the length rules above: offer to go deeper rather than writing a long lecture.`;
 }
 
 const STATUS_TEXT: Record<ExerciseStatus, string> = {
@@ -153,7 +178,14 @@ export function parseExerciseContext(input: unknown, grade?: number, topicId?: s
   return { generator, seed, attempts: safeAttempts, status: safeStatus };
 }
 
-export type ChatTurn = { role: "user" | "assistant"; content: string };
+/** Validates the index of the real-life example the chat was opened from. */
+export function parseRealCase(input: unknown, grade?: number, topicId?: string): number | undefined {
+  if (typeof input !== "number" || !Number.isInteger(input) || !grade || !topicId) return undefined;
+  const topic = getTopic(grade, topicId);
+  return topic && input >= 0 && input < realCases(topic).length ? input : undefined;
+}
+
+export type ChatTurn= { role: "user" | "assistant"; content: string };
 
 /** Validates and trims the client-provided history. Returns null if unusable. */
 export function sanitizeHistory(input: unknown): ChatTurn[] | null {

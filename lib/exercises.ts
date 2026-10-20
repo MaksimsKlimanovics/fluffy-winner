@@ -56,6 +56,16 @@ const person = () => {
   return { lv: NAMES_LV[i], ru: NAMES_RU[i] };
 };
 
+/** Noun after a number: Latvian takes the singular after 1, 21, 31… (not 11). */
+const lvN = (n: number, one: string, many: string) => (n % 10 === 1 && n % 100 !== 11 ? one : many);
+/** Russian: 1 треугольник, 2–4 треугольника, 5–20 треугольников. */
+const ruN = (n: number, one: string, few: string, many: string) => {
+  const d = n % 10;
+  const h = n % 100;
+  if (d === 1 && h !== 11) return one;
+  return d >= 2 && d <= 4 && (h < 12 || h > 14) ? few : many;
+};
+
 const num = (answer: number, tolerance?: number) => ({ kind: "number" as const, answer, tolerance });
 const choice = (answer: string, wrong: string[]) => ({
   kind: "choice" as const,
@@ -141,24 +151,42 @@ export const generators = {
   },
   shapes: (): Exercise => {
     const items = [
-      { lv: "trijstūris", ru: "треугольник", corners: 3 },
-      { lv: "kvadrāts", ru: "квадрат", corners: 4 },
-      { lv: "taisnstūris", ru: "прямоугольник", corners: 4 },
-      { lv: "piecstūris", ru: "пятиугольник", corners: 5 },
-      { lv: "sešstūris", ru: "шестиугольник", corners: 6 },
+      { lv: ["trijstūris", "trijstūri"], ru: ["треугольник", "треугольника", "треугольников"], corners: 3 },
+      { lv: ["kvadrāts", "kvadrāti"], ru: ["квадрат", "квадрата", "квадратов"], corners: 4 },
+      { lv: ["taisnstūris", "taisnstūri"], ru: ["прямоугольник", "прямоугольника", "прямоугольников"], corners: 4 },
+      { lv: ["piecstūris", "piecstūri"], ru: ["пятиугольник", "пятиугольника", "пятиугольников"], corners: 5 },
+      { lv: ["sešstūris", "sešstūri"], ru: ["шестиугольник", "шестиугольника", "шестиугольников"], corners: 6 },
     ];
-    const s = pick(items);
+    const places = [
+      { lv: "Uz zīmējuma ir", ru: "На рисунке" },
+      { lv: "No nūjiņām uz galda saliktas figūras:", ru: "На столе из палочек сложены фигуры:" },
+      { lv: "Uz rotaļu paklāja ir raksts:", ru: "На игровом коврике узор:" },
+      { lv: "Uz loga ir pielīmētas papīra figūras:", ru: "На окне наклеены бумажные фигуры:" },
+    ];
+    const [A, B] = shuffle(items);
+    // Grade 1: the total stays within 20 and is found by adding, not multiplying.
+    const a = rnd(1, Math.floor((20 - B.corners) / A.corners));
+    const b = rnd(1, Math.floor((20 - a * A.corners) / B.corners));
+    const total = a * A.corners + b * B.corners;
+    const name = (s: (typeof items)[number], n: number) => ({
+      lv: `${n} ${lvN(n, s.lv[0], s.lv[1])}`,
+      ru: `${n} ${ruN(n, s.ru[0], s.ru[1], s.ru[2])}`,
+    });
+    const [na, nb] = [name(A, a), name(B, b)];
+    const place = pick(places);
+    const sides = random() < 0.5;
+    const sum = [...Array(a).fill(A.corners), ...Array(b).fill(B.corners)].join(" + ");
     return {
       question: {
-        lv: `Cik stūru ir figūrai “${s.lv}”?`,
-        ru: `Сколько углов у фигуры «${s.ru}»?`,
+        lv: `${place.lv} ${na.lv} un ${nb.lv}. Cik ${sides ? "malu" : "stūru"} ir visām figūrām kopā?`,
+        ru: `${place.ru} ${na.ru} и ${nb.ru}. Сколько всего ${sides ? "сторон" : "углов"} у всех фигур?`,
       },
-      ...num(s.corners),
+      ...num(total),
       hint: {
-        lv: "Nosaukums bieži pasaka priekšā: “trij-stūris” — trīs stūri.",
-        ru: "Название часто подсказывает: «тре-угольник» — три угла.",
+        lv: `Nosaukums pasaka priekšā: “${A.lv[0]}” — ${A.corners} stūri un ${A.corners} malas. Saskaiti katrai figūrai.`,
+        ru: `Название подсказывает: «${A.ru[0]}» — ${A.corners} угла(ов) и столько же сторон. Сложи для каждой фигуры.`,
       },
-      solution: { lv: `${s.lv}: ${s.corners} stūri`, ru: `${s.ru}: ${s.corners} угла(ов)` },
+      solution: { lv: `${sum} = ${total}`, ru: `${sum} = ${total}` },
     };
   },
 
@@ -185,11 +213,27 @@ export const generators = {
   multSmall: (): Exercise => {
     const a = rnd(2, 5);
     const b = rnd(2, 10);
-    return {
-      question: {
-        lv: `Katrā olu kastītē ir ${a} rindas pa ${b} olām. Cik olu ir kastītē?`,
-        ru: `В коробке для яиц ${a} ряда по ${b} яиц. Сколько всего яиц?`,
+    const p = person();
+    const question = pick([
+      {
+        lv: `Olu kastītē ir ${a} rindas pa ${b} olām. Cik olu ir kastītē?`,
+        ru: `В коробке для яиц ${a} ${ruN(a, "ряд", "ряда", "рядов")} по ${b} ${ruN(b, "яйцу", "яйца", "яиц")}. Сколько всего яиц?`,
       },
+      {
+        lv: `${p.lv} nopirka ${a} zīmuļu kastītes, katrā ${b} zīmuļi. Cik zīmuļu ir kopā?`,
+        ru: `${p.ru} купил(а) ${a} ${ruN(a, "коробку", "коробки", "коробок")} карандашей, в каждой по ${b}. Сколько всего карандашей?`,
+      },
+      {
+        lv: `Uz palodzes ir ${a} puķu podi, katrā podā zied ${b} ziedi. Cik ziedu ir kopā?`,
+        ru: `На подоконнике ${a} ${ruN(a, "горшок", "горшка", "горшков")}, в каждом цветёт по ${b} ${ruN(b, "цветку", "цветка", "цветков")}. Сколько всего цветков?`,
+      },
+      {
+        lv: `Ekskursijā bērni brauc tramvajā: ${a} vagonos sēž pa ${b} bērniem. Cik bērnu brauc?`,
+        ru: `На экскурсии дети едут в трамвае: в ${a} вагонах сидят по ${b} детей. Сколько детей едет?`,
+      },
+    ]);
+    return {
+      question,
       ...num(a * b),
       unit: U.pcs,
       hint: {
@@ -223,12 +267,19 @@ export const generators = {
     };
   },
   change: (): Exercise => {
-    const price = rnd(3, 18) * 10 + pick([0, 5]);
-    const paid = price <= 100 ? 100 : 200;
+    const price = rnd(3, 39) * 5;
+    const paid = price < 100 ? 100 : 200;
+    const item = pick([
+      { lv: "Saldējums jūrmalā", ru: "Мороженое на взморье" },
+      { lv: "Bulciņa skolas kafejnīcā", ru: "Булочка в школьном кафе" },
+      { lv: "Burtnīca", ru: "Тетрадь" },
+      { lv: "Sulas paciņa", ru: "Пакетик сока" },
+      { lv: "Tramvaja biļete bērnam", ru: "Детский билет на трамвай" },
+    ]);
     return {
       question: {
-        lv: `Saldējums maksā ${eur(price)}. Tu dod ${eur(paid)}. Cik centu tev atdos atpakaļ?`,
-        ru: `Мороженое стоит ${eur(price)}. Ты даёшь ${eur(paid)}. Сколько центов тебе вернут?`,
+        lv: `${item.lv} maksā ${eur(price)}. Tu dod ${eur(paid)}. Cik centu tev atdos atpakaļ?`,
+        ru: `${item.ru} стоит ${eur(price)}. Ты даёшь ${eur(paid)}. Сколько центов тебе вернут?`,
       },
       ...num(paid - price),
       unit: { lv: "c", ru: "ц" },
@@ -242,13 +293,24 @@ export const generators = {
 
   // ---------- 3. klase ----------
   multTable: (): Exercise => {
-    const a = rnd(3, 9);
-    const b = rnd(3, 9);
-    return {
-      question: {
+    const a = rnd(2, 9);
+    const b = rnd(2, 9);
+    const question = pick([
+      {
         lv: `Klasē ir ${a} galdu rindas, katrā rindā ${b} skolēni. Cik skolēnu ir klasē?`,
-        ru: `В классе ${a} ряда(ов) парт, в каждом ряду ${b} учеников. Сколько всего учеников?`,
+        ru: `В классе ${a} ${ruN(a, "ряд", "ряда", "рядов")} парт, в каждом ряду ${b} учеников. Сколько всего учеников?`,
       },
+      {
+        lv: `Šokolādes tāfelītē ir ${a} rindas pa ${b} gabaliņiem. Cik gabaliņu ir tāfelītē?`,
+        ru: `В плитке шоколада ${a} ${ruN(a, "ряд", "ряда", "рядов")} по ${b} ${ruN(b, "дольке", "дольки", "долек")}. Сколько всего долек?`,
+      },
+      {
+        lv: `Kino zālē ir ${a} rindas, katrā ${b} krēsli. Cik biļešu var pārdot vienam seansam?`,
+        ru: `В зале кинотеатра ${a} ${ruN(a, "ряд", "ряда", "рядов")}, в каждом по ${b} ${ruN(b, "креслу", "кресла", "кресел")}. Сколько билетов можно продать на один сеанс?`,
+      },
+    ]);
+    return {
+      question,
       ...num(a * b),
       hint: {
         lv: `Ja neatceries ${a} · ${b}, atceries ${a} · ${b - 1} = ${a * (b - 1)} un pieskaiti vēl ${a}.`,
@@ -260,11 +322,22 @@ export const generators = {
   divTable: (): Exercise => {
     const b = rnd(2, 9);
     const q = rnd(2, 9);
-    return {
-      question: {
+    const question = pick([
+      {
         lv: `${b * q} konfektes jāsadala vienādi ${b} draugiem. Cik konfekšu saņems katrs?`,
         ru: `${b * q} конфет нужно поровну разделить между ${b} друзьями. Сколько получит каждый?`,
       },
+      {
+        lv: `Sporta stundā ${b * q} skolēni sadalās ${b} vienādās komandās. Cik skolēnu būs katrā komandā?`,
+        ru: `На физкультуре ${b * q} учеников делятся на ${b} равных команд. Сколько учеников будет в каждой команде?`,
+      },
+      {
+        lv: `Jāiepako ${b * q} cepumi, kastītē ietilpst ${b}. Cik kastīšu vajag?`,
+        ru: `Нужно упаковать ${b * q} печений, в коробку помещается ${b}. Сколько коробок нужно?`,
+      },
+    ]);
+    return {
+      question,
       ...num(q),
       unit: U.pcs,
       hint: {
@@ -316,12 +389,28 @@ export const generators = {
   fractionOf: (): Exercise => {
     const d = pick([2, 3, 4, 5, 10]);
     const whole = d * rnd(2, 10);
-    return {
-      question: {
+    const p = person();
+    const story = pick([
+      {
         lv: `Klasē ir ${whole} skolēni. 1/${d} no viņiem brauc uz skolu ar velosipēdu. Cik skolēnu brauc ar velosipēdu?`,
         ru: `В классе ${whole} учеников. 1/${d} из них ездит в школу на велосипеде. Сколько учеников ездит на велосипеде?`,
+        unit: undefined,
       },
+      {
+        lv: `Grāmatā ir ${whole} lappuses. ${p.lv} šodien izlasīja 1/${d} no grāmatas. Cik lappušu izlasīja?`,
+        ru: `В книге ${whole} страниц. ${p.ru} сегодня прочитал(а) 1/${d} книги. Сколько страниц прочитано?`,
+        unit: U.pcs,
+      },
+      {
+        lv: `${p.lv} sakrāja ${whole} €. 1/${d} no naudas viņš iztērēja dāvanai mammai. Cik eiro maksāja dāvana?`,
+        ru: `${p.ru} накопил(а) ${whole} €. 1/${d} денег потрачено на подарок маме. Сколько евро стоил подарок?`,
+        unit: U.eur,
+      },
+    ]);
+    return {
+      question: { lv: story.lv, ru: story.ru },
       ...num(whole / d),
+      unit: story.unit,
       hint: {
         lv: `1/${d} nozīmē “sadalīt ${d} vienādās daļās un paņemt vienu”.`,
         ru: `1/${d} значит «разделить на ${d} равных частей и взять одну».`,
@@ -435,12 +524,17 @@ export const generators = {
 
   // ---------- 6. klase ----------
   percentOf: (): Exercise => {
-    const p = pick([10, 20, 25, 30, 40, 50]);
-    const price = pick([20, 40, 60, 80, 120, 150]);
+    const p = pick([10, 20, 25, 30, 40, 50, 75]);
+    const price = pick([20, 40, 60, 80, 100, 120, 150, 200]);
+    const item = pick([
+      { lv: ["Kedas maksā", "kedas"], ru: ["Кеды стоят", "кеды"] },
+      { lv: ["Ziemas jaka maksā", "jaka"], ru: ["Зимняя куртка стоит", "куртка"] },
+      { lv: ["Skrituļslidas maksā", "skrituļslidas"], ru: ["Роликовые коньки стоят", "коньки"] },
+    ]);
     return {
       question: {
-        lv: `Kedas maksā ${price} €. Izpārdošanā atlaide ir ${p}%. Cik maksās kedas ar atlaidi?`,
-        ru: `Кеды стоят ${price} €. На распродаже скидка ${p}%. Сколько будут стоить кеды со скидкой?`,
+        lv: `${item.lv[0]} ${price} €. Izpārdošanā atlaide ir ${p}%. Cik maksās ${item.lv[1]} ar atlaidi?`,
+        ru: `${item.ru[0]} ${price} €. На распродаже скидка ${p}%. Сколько будут стоить ${item.ru[1]} со скидкой?`,
       },
       ...num(round(price * (1 - p / 100)), 0.01),
       unit: U.eur,
@@ -455,23 +549,30 @@ export const generators = {
     };
   },
   proportion: (): Exercise => {
-    const people = pick([2, 4]);
-    const flour = pick([150, 200, 250, 300]);
-    const want = pick([6, 8, 10, 12].filter((w) => w % people === 0));
+    const people = pick([2, 3, 4]);
+    const want = people * rnd(2, 5);
+    const g = { lv: "g", ru: "г" };
+    const ml = { lv: "ml", ru: "мл" };
+    const [dish, what, flour, unit] = pick([
+      [{ lv: "Pankūku", ru: "блинов" }, { lv: "miltu", ru: "муки" }, pick([150, 200, 250, 300]), g],
+      [{ lv: "Pankūku", ru: "блинов" }, { lv: "piena", ru: "молока" }, pick([200, 300, 400, 500]), ml],
+      [{ lv: "Biezpiena sacepuma", ru: "творожной запеканки" }, { lv: "cukura", ru: "сахара" }, pick([50, 75, 100, 150]), g],
+      [{ lv: "Kakao", ru: "какао" }, { lv: "piena", ru: "молока" }, pick([250, 300, 400, 600]), ml],
+    ] as const);
     return {
       question: {
-        lv: `Pankūku receptē ${people} cilvēkiem vajag ${flour} g miltu. Cik gramu miltu vajag ${want} cilvēkiem?`,
-        ru: `В рецепте блинов на ${people} человек нужно ${flour} г муки. Сколько граммов муки нужно на ${want} человек?`,
+        lv: `${dish.lv} receptē ${people} cilvēkiem vajag ${flour} ${unit.lv} ${what.lv}. Cik ${unit.lv} ${what.lv} vajag ${want} cilvēkiem?`,
+        ru: `В рецепте ${dish.ru} на ${people} человек нужно ${flour} ${unit.ru} ${what.ru}. Сколько ${unit.ru} ${what.ru} нужно на ${want} человек?`,
       },
       ...num((flour / people) * want),
-      unit: { lv: "g", ru: "г" },
+      unit,
       hint: {
-        lv: `Cik reizes vairāk cilvēku? ${want} : ${people}. Tikpat reizes vairāk miltu.`,
-        ru: `Во сколько раз больше людей? ${want} : ${people}. Во столько же раз больше муки.`,
+        lv: `Cik reizes vairāk cilvēku? ${want} : ${people}. Tikpat reizes vairāk ${what.lv}.`,
+        ru: `Во сколько раз больше людей? ${want} : ${people}. Во столько же раз больше ${what.ru}.`,
       },
       solution: {
-        lv: `${want} : ${people} = ${want / people}; ${flour} · ${want / people} = ${(flour / people) * want} g`,
-        ru: `${want} : ${people} = ${want / people}; ${flour} · ${want / people} = ${(flour / people) * want} г`,
+        lv: `${want} : ${people} = ${want / people}; ${flour} · ${want / people} = ${(flour / people) * want} ${unit.lv}`,
+        ru: `${want} : ${people} = ${want / people}; ${flour} · ${want / people} = ${(flour / people) * want} ${unit.ru}`,
       },
     };
   },
@@ -498,8 +599,64 @@ export const generators = {
     };
   },
   circle: (): Exercise => {
-    const d = pick([50, 60, 66, 70]);
-    const turns = pick([10, 100, 1000]);
+    const kind = pick(["wheel", "wheel", "bed", "pizza", "ferris", "clock"] as const);
+    if (kind === "bed" || kind === "ferris" || kind === "clock") {
+      // Circumference C = π · d, worked with π ≈ 3,14 as the question says.
+      const d = kind === "bed" ? rnd(1, 20) : kind === "ferris" ? rnd(3, 12) * 5 : rnd(5, 20) * 2;
+      const c = round(3.14 * d, 2);
+      const unit = kind === "clock" ? U.cm : U.m;
+      const q =
+        kind === "bed"
+          ? {
+              lv: `Apaļas puķu dobes diametrs ir ${d} m. Cik metru apmales vajag apkārt dobei? (π ≈ 3,14)`,
+              ru: `Диаметр круглой клумбы ${d} м. Сколько метров бордюра нужно вокруг клумбы? (π ≈ 3,14)`,
+            }
+          : kind === "ferris"
+            ? {
+                lv: `Panorāmas rata diametrs ir ${d} m. Cik metrus kabīne nobrauc vienā apgriezienā? (π ≈ 3,14)`,
+                ru: `Диаметр колеса обозрения ${d} м. Сколько метров проезжает кабинка за один оборот? (π ≈ 3,14)`,
+              }
+            : {
+                lv: `Sienas pulksteņa minūšu rādītājs ir ${d / 2} cm garš. Cik centimetrus tā gals noiet vienā stundā? (π ≈ 3,14)`,
+                ru: `Минутная стрелка настенных часов длиной ${d / 2} см. Сколько сантиметров проходит её конец за час? (π ≈ 3,14)`,
+              };
+      return {
+        question: q,
+        ...num(c, Math.max(0.1, round(c * 0.005, 2))),
+        unit,
+        hint: {
+          lv: kind === "clock" ? "Stundā gals apiet pilnu apli: C = 2 · π · r." : "Riņķa līnijas garums C = π · d.",
+          ru: kind === "clock" ? "За час конец стрелки проходит полный круг: C = 2 · π · r." : "Длина окружности C = π · d.",
+        },
+        solution: (() => {
+          const model = kind === "clock" ? `2 · 3,14 · ${d / 2}` : `3,14 · ${d}`;
+          return { lv: `C = ${model} = ${fmt(c)} ${unit.lv}`, ru: `C = ${model} = ${fmt(c)} ${unit.ru}` };
+        })(),
+      };
+    }
+    if (kind === "pizza") {
+      const d = pick([24, 26, 28, 30, 32, 34, 36, 40, 45, 50]);
+      const r = d / 2;
+      const s = Math.round(3.14 * r * r);
+      return {
+        question: {
+          lv: `Picas diametrs ir ${d} cm. Cik kvadrātcentimetru ir picai? (π ≈ 3,14, noapaļo līdz veseliem cm²)`,
+          ru: `Диаметр пиццы ${d} см. Какова её площадь в квадратных сантиметрах? (π ≈ 3,14, округли до целых см²)`,
+        },
+        ...num(s, Math.max(1, Math.round(s * 0.01))),
+        unit: U.cm2,
+        hint: {
+          lv: "Riņķa laukums S = π · r², un rādiuss ir puse no diametra.",
+          ru: "Площадь круга S = π · r², а радиус — половина диаметра.",
+        },
+        solution: {
+          lv: `r = ${d} : 2 = ${fmt(r)} cm; S = 3,14 · ${fmt(r)}² ≈ ${s} cm²`,
+          ru: `r = ${d} : 2 = ${fmt(r)} см; S = 3,14 · ${fmt(r)}² ≈ ${s} см²`,
+        },
+      };
+    }
+    const d = pick([40, 50, 56, 60, 66, 70]);
+    const turns = pick([10, 20, 25, 50, 100, 200, 250, 500, 1000]);
     const meters = round((Math.PI * d * turns) / 100, 1);
     return {
       question: {
@@ -542,23 +699,58 @@ export const generators = {
     };
   },
   powers: (): Exercise => {
-    const base = pick([2, 3, 10]);
-    const exp = base === 10 ? rnd(2, 6) : rnd(2, 6);
-    const story =
-      base === 2
-        ? {
-            lv: `Ziņa tiek pārsūtīta: katrs to nosūta 2 draugiem. Cik cilvēku saņems ziņu ${exp}. kārtā? (2^${exp})`,
-            ru: `Сообщение пересылают: каждый отправляет его 2 друзьям. Сколько человек получат его на ${exp}-м шаге? (2^${exp})`,
-          }
-        : base === 3
-          ? {
-              lv: `Baktērija ik stundu sadalās 3 daļās. Cik baktēriju būs pēc ${exp} stundām? (3^${exp})`,
-              ru: `Бактерия каждый час делится на 3. Сколько бактерий будет через ${exp} часов? (3^${exp})`,
-            }
-          : {
-              lv: `Cik ir 10^${exp}? (Tik daudz nulles kā kāpinātājs!)`,
-              ru: `Сколько будет 10^${exp}? (Столько нулей, сколько показатель!)`,
-            };
+    const kind = pick(["message", "bacteria", "ten", "cube", "tiles", "paper", "rule", "rule"] as const);
+    if (kind === "rule") {
+      // Multiplying powers with the same base: aᵐ · aⁿ = aᵐ⁺ⁿ.
+      const b = pick([2, 3, 5, 7, 10]);
+      const m = rnd(2, 7);
+      const n = rnd(2, 7);
+      return {
+        question: {
+          lv: `Kalkulators nespēj parādīt tik lielu skaitli, tāpēc raksti pakāpē: ${b}^${m} · ${b}^${n} = ${b}^?. Ieraksti kāpinātāju.`,
+          ru: `Калькулятор не может показать такое большое число, поэтому запиши степенью: ${b}^${m} · ${b}^${n} = ${b}^?. Впиши показатель.`,
+        },
+        ...num(m + n),
+        hint: {
+          lv: `${b}^${m} ir ${m} reizinātāji ${b}, un ${b}^${n} — vēl ${n}. Cik reizinātāju kopā?`,
+          ru: `${b}^${m} — это ${m} множителей ${b}, а ${b}^${n} — ещё ${n}. Сколько множителей всего?`,
+        },
+        solution: { lv: `${b}^${m} · ${b}^${n} = ${b}^(${m} + ${n}) = ${b}^${m + n}`, ru: `${b}^${m} · ${b}^${n} = ${b}^(${m} + ${n}) = ${b}^${m + n}` },
+      };
+    }
+    const [base, exp] =
+      kind === "message" ? [2, rnd(2, 10)]
+      : kind === "bacteria" ? [3, rnd(2, 6)]
+      : kind === "ten" ? [10, rnd(2, 9)]
+      : kind === "cube" ? [rnd(2, 10), 3]
+      : kind === "tiles" ? [rnd(11, 25), 2]
+      : [2, rnd(2, 8)];
+    const story = {
+      message: {
+        lv: `Ziņa tiek pārsūtīta: katrs to nosūta 2 draugiem. Cik cilvēku saņems ziņu ${exp}. kārtā? (2^${exp})`,
+        ru: `Сообщение пересылают: каждый отправляет его 2 друзьям. Сколько человек получат его на ${exp}-м шаге? (2^${exp})`,
+      },
+      bacteria: {
+        lv: `Baktērija ik stundu sadalās 3 daļās. Cik baktēriju būs pēc ${exp} stundām? (3^${exp})`,
+        ru: `Бактерия каждый час делится на 3. Сколько бактерий будет через ${exp} часов? (3^${exp})`,
+      },
+      ten: {
+        lv: `Cik ir 10^${exp}? (Tik daudz nulles kā kāpinātājs!)`,
+        ru: `Сколько будет 10^${exp}? (Столько нулей, сколько показатель!)`,
+      },
+      cube: {
+        lv: `Kuba formas kastes mala ir ${base} dm. Cik 1 dm³ kubiņu tajā ietilpst? (${base}^3)`,
+        ru: `Ребро коробки в форме куба ${base} дм. Сколько кубиков по 1 дм³ в неё поместится? (${base}^3)`,
+      },
+      tiles: {
+        lv: `Kvadrātveida laukumā flīzes ieklātas ${base} rindās pa ${base} flīzēm. Cik flīžu ir laukumā? (${base}^2)`,
+        ru: `На квадратной площадке плитка уложена в ${base} рядов по ${base} плиток. Сколько всего плиток? (${base}^2)`,
+      },
+      paper: {
+        lv: `Papīra lapu pārloka uz pusēm ${exp} reizes. Cik kārtās papīrs ir salocīts? (2^${exp})`,
+        ru: `Лист бумаги складывают пополам ${exp} раз. Сколько слоёв бумаги получится? (2^${exp})`,
+      },
+    }[kind];
     return {
       question: story,
       ...num(base ** exp),
@@ -637,16 +829,50 @@ export const generators = {
     };
   },
   pythagoras: (): Exercise => {
-    const [a, b, c] = pick([
+    // Whole-number right triangles (Pythagorean triples and their multiples), hypotenuse up to 50.
+    const triples = [
       [3, 4, 5],
-      [6, 8, 10],
       [5, 12, 13],
-      [9, 12, 15],
       [8, 15, 17],
-      [12, 16, 20],
-    ]);
-    const askHyp = random() < 0.6;
-    return askHyp
+      [7, 24, 25],
+      [20, 21, 29],
+      [12, 35, 37],
+      [9, 40, 41],
+    ].flatMap((t) => Array.from({ length: Math.floor(50 / t[2]) }, (_, k) => t.map((x) => x * (k + 1))));
+    const [p, q, c] = pick(triples);
+    const [a, b] = random() < 0.5 ? [p, q] : [q, p];
+    const kind = pick(["ladder", "tv", "park", "kite"] as const);
+    if (kind === "park") {
+      return {
+        question: {
+          lv: `Parks ir taisnstūris ${a} m × ${b} m. Cik garš ir celiņš pa diagonāli no viena stūra līdz pretējam?`,
+          ru: `Парк — прямоугольник ${a} м × ${b} м. Какой длины дорожка по диагонали из одного угла в противоположный?`,
+        },
+        ...num(c),
+        unit: U.m,
+        hint: { lv: "Diagonāle ir taisnleņķa trijstūra hipotenūza: c² = a² + b²", ru: "Диагональ — гипотенуза прямоугольного треугольника: c² = a² + b²" },
+        solution: {
+          lv: `c = √(${a}² + ${b}²) = √(${a * a} + ${b * b}) = √${c * c} = ${c} m`,
+          ru: `c = √(${a}² + ${b}²) = √(${a * a} + ${b * b}) = √${c * c} = ${c} м`,
+        },
+      };
+    }
+    if (kind === "kite") {
+      return {
+        question: {
+          lv: `Pūķa aukla ir ${c} m gara un nostiepta taisni. Pūķis ir tieši virs punkta, kas ir ${b} m no tevis. Cik augstu ir pūķis (no rokas augstuma)?`,
+          ru: `Нить воздушного змея длиной ${c} м натянута прямо. Змей находится точно над точкой в ${b} м от тебя. На какой высоте змей (от уровня руки)?`,
+        },
+        ...num(a),
+        unit: U.m,
+        hint: { lv: "Aukla ir hipotenūza: a² = c² − b²", ru: "Нить — гипотенуза: a² = c² − b²" },
+        solution: {
+          lv: `a = √(${c}² − ${b}²) = √(${c * c} − ${b * b}) = √${a * a} = ${a} m`,
+          ru: `a = √(${c}² − ${b}²) = √(${c * c} − ${b * b}) = √${a * a} = ${a} м`,
+        },
+      };
+    }
+    return kind === "ladder"
       ? {
           question: {
             lv: `Kāpņu apakša ir ${a} m no mājas sienas, un tās sasniedz ${b} m augstumu. Cik garas ir kāpnes?`,
@@ -675,19 +901,47 @@ export const generators = {
         };
   },
   sqrt: (): Exercise => {
-    const side = rnd(4, 20);
+    const side = rnd(2, 30);
+    const n = side * side;
+    const [question, unit] = pick([
+      [
+        {
+          lv: `Kvadrātveida terases laukums ir ${n} m². Cik garš ir terases sāns?`,
+          ru: `Площадь квадратной террасы ${n} м². Какова длина её стороны?`,
+        },
+        U.m,
+      ],
+      [
+        {
+          lv: `Kvadrātveida mozaīka salikta no ${n} vienādām flīzītēm. Cik flīzīšu ir vienā rindā?`,
+          ru: `Квадратная мозаика сложена из ${n} одинаковых плиток. Сколько плиток в одном ряду?`,
+        },
+        U.pcs,
+      ],
+      [
+        {
+          lv: `Kvadrātveida zemes gabala laukums ir ${n} m². Cik metru žoga vajag vienai tā malai?`,
+          ru: `Площадь квадратного участка ${n} м². Сколько метров забора нужно на одну его сторону?`,
+        },
+        U.m,
+      ],
+      [
+        {
+          lv: `Kvadrātveida fotogrāfijas laukums ir ${n} cm². Cik garš ir fotogrāfijas sāns?`,
+          ru: `Площадь квадратной фотографии ${n} см². Какова длина её стороны?`,
+        },
+        U.cm,
+      ],
+    ] as const);
     return {
-      question: {
-        lv: `Kvadrātveida terases laukums ir ${side * side} m². Cik garš ir terases sāns?`,
-        ru: `Площадь квадратной террасы ${side * side} м². Какова длина её стороны?`,
-      },
+      question,
       ...num(side),
-      unit: U.m,
+      unit,
       hint: {
-        lv: "Meklē skaitli, kuru reizinot pašu ar sevi, iegūst laukumu.",
-        ru: "Найди число, которое при умножении само на себя даёт площадь.",
+        lv: "Meklē skaitli, kuru reizinot pašu ar sevi, iegūst doto skaitli.",
+        ru: "Найди число, которое при умножении само на себя даёт данное число.",
       },
-      solution: { lv: `√${side * side} = ${side} m`, ru: `√${side * side} = ${side} м` },
+      solution: { lv: `√${n} = ${side}, jo ${side} · ${side} = ${n}`, ru: `√${n} = ${side}, потому что ${side} · ${side} = ${n}` },
     };
   },
   probability: (): Exercise => {
@@ -721,20 +975,21 @@ export const generators = {
 
   // ---------- 9. klase ----------
   quadratic: (): Exercise => {
-    const r1 = rnd(-6, 6);
-    let r2 = rnd(-6, 6);
-    if (r2 === r1) r2 = r1 + 2;
+    const r1 = rnd(-8, 8);
+    let r2 = rnd(-8, 8);
+    if (r2 === r1) r2 = r1 > 6 ? r1 - 2 : r1 + 2;
     const b = -(r1 + r2);
     const c = r1 * r2;
     const big = Math.max(r1, r2);
+    const askBig = random() < 0.6;
     const term = (coef: number, sym: string) =>
       coef === 0 ? "" : `${coef > 0 ? " + " : " − "}${Math.abs(coef) === 1 && sym ? "" : Math.abs(coef)}${sym}`;
     return {
       question: {
-        lv: `Atrisini vienādojumu x²${term(b, "x")}${term(c, "")} = 0. Ieraksti lielāko sakni.`,
-        ru: `Реши уравнение x²${term(b, "x")}${term(c, "")} = 0. Впиши больший корень.`,
+        lv: `Atrisini vienādojumu x²${term(b, "x")}${term(c, "")} = 0. Ieraksti ${askBig ? "lielāko" : "mazāko"} sakni.`,
+        ru: `Реши уравнение x²${term(b, "x")}${term(c, "")} = 0. Впиши ${askBig ? "больший" : "меньший"} корень.`,
       },
-      ...num(big),
+      ...num(askBig ? big : Math.min(r1, r2)),
       hint: {
         lv: "D = b² − 4ac, x = (−b ± √D) / 2a. Vai arī meklē divus skaitļus, kuru summa ir −b un reizinājums c (Vjeta teorēma).",
         ru: "D = b² − 4ac, x = (−b ± √D) / 2a. Или найди два числа с суммой −b и произведением c (теорема Виета).",
@@ -811,8 +1066,31 @@ export const generators = {
     };
   },
   volume: (): Exercise => {
-    const a = rnd(2, 6);
-    const b = rnd(2, 4);
+    if (random() < 0.4) {
+      // Aquarium in centimetres: 1 l = 1 dm³ = 1000 cm³.
+      const a = pick([40, 50, 60, 80, 100, 120]);
+      const b = pick([25, 30, 40, 50]);
+      const h = pick([30, 40, 50]);
+      const cm3 = a * b * h;
+      return {
+        question: {
+          lv: `Akvārijs ir ${a} cm garš, ${b} cm plats un ${h} cm augsts. Cik litru ūdens tajā ietilpst? (1 l = 1000 cm³)`,
+          ru: `Аквариум длиной ${a} см, шириной ${b} см и высотой ${h} см. Сколько литров воды в него помещается? (1 л = 1000 см³)`,
+        },
+        ...num(cm3 / 1000),
+        unit: U.l,
+        hint: {
+          lv: "Tilpums V = garums · platums · augstums. Tad dali ar 1000, lai iegūtu litrus.",
+          ru: "Объём V = длина · ширина · высота. Потом раздели на 1000, чтобы получить литры.",
+        },
+        solution: {
+          lv: `V = ${a} · ${b} · ${h} = ${cm3} cm³ = ${fmt(cm3 / 1000)} l`,
+          ru: `V = ${a} · ${b} · ${h} = ${cm3} см³ = ${fmt(cm3 / 1000)} л`,
+        },
+      };
+    }
+    const a = rnd(2, 8);
+    const b = rnd(2, 5);
     const h = pick([1, 1.5, 2]);
     const v = round(a * b * h, 2);
     return {
@@ -835,15 +1113,26 @@ export const generators = {
   // ---------- added for Skola2030 coverage ----------
   sequence: (): Exercise => {
     const up = random() < 0.6;
-    const step = pick([2, 3, 4, 5]);
+    const step = pick([1, 2, 3, 4, 5]);
     const start = up ? rnd(0, 20 - 4 * step) : rnd(4 * step, 20);
     const terms = Array.from({ length: 4 }, (_, i) => start + (up ? i : -i) * step);
     const next = start + (up ? 4 : -4) * step;
+    const list = terms.join(", ");
     return {
-      question: {
-        lv: `Kāpnēm uz pakāpieniem uzrakstīti skaitļi: ${terms.join(", ")}, … Kāds skaitlis būs uz nākamā pakāpiena?`,
-        ru: `На ступеньках лестницы написаны числа: ${terms.join(", ")}, … Какое число будет на следующей ступеньке?`,
-      },
+      question: pick([
+        {
+          lv: `Kāpnēm uz pakāpieniem uzrakstīti skaitļi: ${list}, … Kāds skaitlis būs uz nākamā pakāpiena?`,
+          ru: `На ступеньках лестницы написаны числа: ${list}, … Какое число будет на следующей ступеньке?`,
+        },
+        {
+          lv: `Varde lec pa skaitļu taisni un nolaižas uz skaitļiem ${list}, … Uz kura skaitļa tā nolaidīsies nākamreiz?`,
+          ru: `Лягушка прыгает по числовой прямой и приземляется на числа ${list}, … На какое число она приземлится в следующий раз?`,
+        },
+        {
+          lv: `Skaitīšanas dziesmiņā bērni sauc skaitļus: ${list}, … Kāds skaitlis jāsauc tālāk?`,
+          ru: `В считалке дети называют числа: ${list}, … Какое число назвать дальше?`,
+        },
+      ]),
       ...num(next),
       hint: {
         lv: "Paskaties, par cik mainās katrs nākamais skaitlis. Vai tie aug vai samazinās?",
@@ -1042,12 +1331,18 @@ export const generators = {
     };
   },
   circleApprox: (): Exercise => {
-    const d = pick([0.8, 1, 1.2, 1.5, 2, 3]);
-    const c = d * 3;
+    const d = rnd(5, 40) / 10;
+    const c = round(d * 3, 2);
+    const thing = pick([
+      { lv: ["Apaļa galda diametrs", "lentes", "apliktu to apkārt malai"], ru: ["Диаметр круглого стола", "ленты", "обклеить его край"] },
+      { lv: ["Batuta diametrs", "aizsargtīkla", "apjoztu batutu"], ru: ["Диаметр батута", "защитной сетки", "обнести батут"] },
+      { lv: ["Apaļas puķu dobes diametrs", "apmales", "apliktu apkārt dobei"], ru: ["Диаметр круглой клумбы", "бордюра", "обложить клумбу"] },
+      { lv: ["Apaļa paklāja diametrs", "bārkstu lentes", "apšūtu tā malu"], ru: ["Диаметр круглого ковра", "бахромы", "обшить его край"] },
+    ]);
     return {
       question: {
-        lv: `Apaļa galda diametrs ir ${fmt(d)} m. Apmēram cik metru lentes vajag, lai apliktu to apkārt malai? (Riņķa līnija ir aptuveni trīs diametri.)`,
-        ru: `Диаметр круглого стола ${fmt(d)} м. Примерно сколько метров ленты нужно, чтобы обклеить его край? (Окружность — это примерно три диаметра.)`,
+        lv: `${thing.lv[0]} ir ${fmt(d)} m. Apmēram cik metru ${thing.lv[1]} vajag, lai ${thing.lv[2]}? (Riņķa līnija ir aptuveni trīs diametri.)`,
+        ru: `${thing.ru[0]} ${fmt(d)} м. Примерно сколько метров ${thing.ru[1]} нужно, чтобы ${thing.ru[2]}? (Окружность — это примерно три диаметра.)`,
       },
       // Accept the estimate 3·d and anything up to π·d: both show understanding.
       ...num(round(d * 3.07, 2), round(d * 0.08, 2)),
@@ -1063,8 +1358,35 @@ export const generators = {
     };
   },
   percentChange: (): Exercise => {
-    const price = pick([20, 40, 50, 80, 100, 120, 200]);
+    const price = pick([20, 30, 40, 50, 60, 80, 100, 120, 150, 200]);
     const p = pick([10, 20, 25, 50]);
+    const kind = pick(["upDown", "up", "down"] as const);
+    if (kind !== "upDown") {
+      const item = pick([
+        { lv: ["Futbola bumba", "bumba"], ru: "Футбольный мяч" },
+        { lv: ["Mēneša biļete sabiedriskajam transportam", "biļete"], ru: "Месячный проездной" },
+        { lv: ["Austiņas", "austiņas"], ru: "Наушники" },
+      ]);
+      const factor = kind === "up" ? 1 + p / 100 : 1 - p / 100;
+      const now = round(price * factor);
+      const verb = kind === "up" ? { lv: "palielināja", ru: "подняли" } : { lv: "samazināja", ru: "снизили" };
+      return {
+        question: {
+          lv: `${item.lv[0]} maksāja ${price} €. Cenu ${verb.lv} par ${p}%. Cik ${item.lv[1]} maksā tagad?`,
+          ru: `${item.ru}: цена была ${price} €. Цену ${verb.ru} на ${p}%. Какая цена теперь?`,
+        },
+        ...num(now, 0.01),
+        unit: U.eur,
+        hint: {
+          lv: `Jaunā cena ir ${kind === "up" ? 100 + p : 100 - p}% no vecās: reizini ar ${fmt(factor)}.`,
+          ru: `Новая цена — ${kind === "up" ? 100 + p : 100 - p}% от старой: умножь на ${fmt(factor)}.`,
+        },
+        solution: {
+          lv: `${price} · ${fmt(factor)} = ${fmt(now)} €`,
+          ru: `${price} · ${fmt(factor)} = ${fmt(now)} €`,
+        },
+      };
+    }
     const up = round(price * (1 + p / 100));
     const back = round(up * (1 - p / 100));
     return {
@@ -1218,6 +1540,40 @@ export function generateExercise(id: GeneratorId, seed: number): Exercise {
   } finally {
     random = previous;
   }
+}
+
+/** Every topic has a numbered set of at least this many different problems. */
+export const PROBLEMS_PER_TOPIC = 100;
+
+/** Two exercises are the same problem when the story, numbers and answer options match. */
+export function problemKey(ex: Exercise): string {
+  return ex.kind === "choice" ? `${ex.question.lv}|${[...ex.choices].sort().join("|")}` : ex.question.lv;
+}
+
+const sets = new Map<GeneratorId, number[]>();
+
+/**
+ * The topic's numbered problems, as seeds: the same list on every device and on the
+ * server, so "problem 37" is always the same task and the tutor can rebuild it. Seeds are
+ * walked in a fixed order and repeats of an earlier problem are skipped.
+ */
+export function problemSet(id: GeneratorId): number[] {
+  const cached = sets.get(id);
+  if (cached) return cached;
+  let h = 2166136261;
+  for (const ch of id) h = Math.imul(h ^ ch.charCodeAt(0), 16777619);
+  const next = seeded(h);
+  const seen = new Set<string>();
+  const seeds: number[] = [];
+  for (let tries = 0; seeds.length < PROBLEMS_PER_TOPIC && tries < PROBLEMS_PER_TOPIC * 100; tries++) {
+    const seed = Math.floor(next() * MAX_SEED);
+    const key = problemKey(generateExercise(id, seed));
+    if (seen.has(key)) continue;
+    seen.add(key);
+    seeds.push(seed);
+  }
+  sets.set(id, seeds);
+  return seeds;
 }
 
 /** Accepts "3,5", "3.5", " 3 ", "-4", "−4". Returns null when it isn't a number. */

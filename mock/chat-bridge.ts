@@ -1,6 +1,6 @@
 import { formatAnswer, generateExercise } from "@/lib/exercises";
 import type { Lang } from "@/lib/i18n";
-import { buildSystemPrompt, parseExerciseContext, sanitizeHistory } from "@/lib/tutor";
+import { buildSystemPrompt, parseExerciseContext, parseRealCase, sanitizeHistory } from "@/lib/tutor";
 
 /**
  * In the clickable mock there is no /api/chat server. The app still calls
@@ -80,7 +80,7 @@ async function handleChat(init: RequestInit | undefined): Promise<Response> {
   }
 
   // `sample` has no system prompt of its own: the tutor's instructions open the first user turn.
-  const system = buildSystemPrompt(lang, grade, topicId, exercise);
+  const system = buildSystemPrompt(lang, grade, topicId, exercise, parseRealCase(body.realCase, grade, topicId));
   const turns = history.map((t, i) =>
     i === 0 ? { ...t, content: `${system}\n\n=== The child's message ===\n${t.content}` } : t,
   );

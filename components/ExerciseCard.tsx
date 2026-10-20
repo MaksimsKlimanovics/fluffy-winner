@@ -1,7 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
-import { type Exercise, type GeneratorId, checkAnswer, formatAnswer, generateExercise, newSeed } from "@/lib/exercises";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { type Exercise, type GeneratorId, checkAnswer, formatAnswer, generateExercise, problemSet } from "@/lib/exercises";
 import { gradeColorAttrs, usesKeypad } from "@/lib/grade-ui";
 import { UI } from "@/lib/i18n";
 import type { ExerciseContext } from "@/lib/tutor";
@@ -52,11 +52,14 @@ export function ExerciseCard({
   topicId: string;
   color: string;
 }) {
-  const { t, addStar } = useApp();
-  // Generated after mount: random numbers would otherwise differ between
-  // the server render and hydration. The seed lets the tutor API rebuild the
-  // exact same exercise, answer key included.
-  const [task, setTask] = useState<{ seed: number; ex: Exercise } | null>(null);
+  const { t, addStar, solved, markSolved, ready } = useApp();
+  // The topic's fixed, numbered problems. Each is a seed, so the tutor API can rebuild the
+  // exact same exercise, answer key included. The card opens on the first unsolved one
+  // once browser storage has been read.
+  const set = useMemo(() => problemSet(generator), [generator]);
+  const done = solved(grade, topicId);
+  const [task, setTask] = useState<{ index: number; seed: number; ex: Exercise } | null>(null);
+  const [showAll, setShowAll] = useState(false);
   const [input, setInput] = useState("");
   const [status, setStatus] = useState<Status>("idle");
   const [attempts, setAttempts] = useState<string[]>([]);
@@ -67,17 +70,32 @@ export function ExerciseCard({
   const tutorButtonRef = useRef<HTMLButtonElement>(null);
   const [streak, setStreak] = useState(0);
 
-  const next = useCallback(() => {
-    const seed = newSeed();
-    setTask({ seed, ex: generateExercise(generator, seed) });
-    setInput("");
-    setStatus("idle");
-    setAttempts([]);
-    setShowHint(false);
-    setShowSolution(false);
-  }, [generator]);
+  const open = useCallback(
+    (index: number) => {
+      const seed = set[index];
+      setTask({ index, seed, ex: generateExercise(generator, seed) });
+      setInput("");
+      setStatus("idle");
+      setAttempts([]);
+      setShowHint(false);
+      setShowSolution(false);
+    },
+    [generator, set],
+  );
 
-  useEffect(next, [next]);
+  /** The next unsolved problem after `from` (wrapping around), or simply the next one when all are solved. */
+  const nextIndex = (from: number) => {
+    for (let step = 1; step <= set.length; step++) {
+      const i = (from + step) % set.length;
+      if (!done.includes(i)) return i;
+    }
+    return (from + 1) % set.length;
+  };
+
+  useEffect(() => {
+    if (ready && !task) open(done.length ? nextIndex(-1) : 0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only the first open waits for storage
+  }, [ready, task, open]);
 
   // The sheet covers the lower part of the screen: once it is open (and the page has
   // room to scroll), bring the question up into view above it.
@@ -101,7 +119,8 @@ export function ExerciseCard({
   const getContext = useCallback(() => contextRef.current!, []);
 
   if (!task) return <div className="exercise skeleton" />;
-  const { ex, seed } = task;
+  const { ex, seed, index } = task;
+  const solvedBefore = done.includes(index);
   const keypad = usesKeypad(grade);
   const milestone = status === "correct" && !showSolution && MILESTONES.includes(streak);
 
@@ -110,7 +129,11 @@ export function ExerciseCard({
     if (checkAnswer(ex, value)) {
       setStatus("correct");
       if (!showSolution) {
-        addStar(grade, topicId);
+        // One star per problem: solving it again is practice, not a new star.
+        if (!solvedBefore) {
+          addStar(grade, topicId);
+          markSolved(grade, topicId, index);
+        }
         setStreak((s) => s + 1);
       }
     } else {
@@ -125,11 +148,23 @@ export function ExerciseCard({
     <div ref={cardRef} className={`exercise status-${status}`} {...gradeColorAttrs(grade)}>
       <div className="exercise-head">
         <span className="badge">{t(UI.practice)}</span>
+        <span className="problem-no">
+          {t(UI.problem)} {index + 1}/{set.length}
+          {solvedBefore && <Icon name="checkmark" size={16} label={t(UI.solvedMark)} />}
+        </span>
         {streak > 1 && (
           <span className="streak">
             <Icon name="sparkles" size={16} /> {streak} {t(UI.streak)}
           </span>
         )}
+      </div>
+      <div className="problem-progress">
+        <span className="meter" aria-hidden="true">
+          <span style={{ width: `${(done.length / set.length) * 100}%` }} />
+        </span>
+        <small>
+          {t(UI.solvedCount)}: {done.length}/{set.length}
+        </small>
       </div>
 
       <p className="exercise-q">{t(ex.question)}</p>
@@ -238,10 +273,42 @@ export function ExerciseCard({
         >
           <Icon name="bubble" size={18} /> {t(personaUI(persona(grade)).askAi)}
         </button>
-        <button className="btn primary" onClick={next}>
-          <Icon name="refresh" size={18} /> {t(UI.newTask)}
+        <button className="btn ghost" onClick={() => setShowAll((v) => !v)} aria-expanded={showAll}>
+          {t(UI.allProblems)}
         </button>
+        <span className="problem-nav">
+          <button
+            className="icon-btn"
+            onClick={() => open((index - 1 + set.length) % set.length)}
+            aria-label={t(UI.prevProblem)}
+          >
+            <Icon name="chevronLeft" size={20} />
+          </button>
+          <button className="btn primary" onClick={() => open(nextIndex(index))}>
+            {t(UI.nextProblem)} <Icon name="chevronRight" size={18} />
+          </button>
+        </span>
       </div>
+
+      {showAll && (
+        <div className="problem-grid" role="group" aria-label={t(UI.allProblems)}>
+          {set.map((_, i) => (
+            <button
+              key={i}
+              type="button"
+              className={`${done.includes(i) ? "done" : ""} ${i === index ? "current" : ""}`}
+              aria-current={i === index ? "true" : undefined}
+              aria-label={`${t(UI.problem)} ${i + 1}${done.includes(i) ? `, ${t(UI.solvedMark)}` : ""}`}
+              onClick={() => {
+                open(i);
+                setShowAll(false);
+              }}
+            >
+              {i + 1}
+            </button>
+          ))}
+        </div>
+      )}
 
       {showTutor && cardRef.current?.closest<HTMLElement>(".page") && (
         // Keyed by seed: a new exercise starts a fresh conversation.

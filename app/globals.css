@@ -1132,9 +1132,17 @@ a.row:active {
 }
 
 .real-case {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
   padding: 16px;
   border-radius: var(--radius-card);
   background: var(--c-soft);
+}
+
+.real-case .btn {
+  align-self: flex-start;
+  margin-top: 4px;
 }
 
 .real-case h3 {
@@ -1482,7 +1490,7 @@ input[type="range"]::-moz-range-thumb {
 .exercise-head {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 10px;
 }
 
 .streak {
@@ -1599,8 +1607,79 @@ input[type="range"]::-moz-range-thumb {
   gap: 8px;
 }
 
-.exercise-actions .btn.primary {
+.exercise-actions .problem-nav {
+  display: flex;
+  gap: 8px;
   margin-left: auto;
+}
+
+/* Numbered problems: "Uzdevums 12/100", how many are solved, and the overview grid. */
+.problem-no {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font: var(--t-subhead);
+  font-weight: 700;
+  color: var(--label-2);
+}
+
+.problem-no svg {
+  color: var(--c-text);
+}
+
+.problem-progress {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--label-2);
+}
+
+.problem-progress small {
+  flex: none;
+  font: var(--t-caption);
+  font-weight: 600;
+}
+
+.problem-progress .meter {
+  flex: 1;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--fill);
+  overflow: hidden;
+}
+
+.problem-progress .meter span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--c);
+}
+
+.problem-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
+  gap: 6px;
+}
+
+.problem-grid button {
+  height: 40px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--fill);
+  color: var(--label);
+  font: var(--t-subhead);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.problem-grid button.done {
+  background: var(--c-soft);
+  color: var(--c-text);
+}
+
+.problem-grid button.current {
+  box-shadow: inset 0 0 0 2px var(--c);
 }
 
 /* ---------- chat ---------- */

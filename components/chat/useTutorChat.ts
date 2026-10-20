@@ -12,10 +12,12 @@ type Context = {
   topicId?: string;
   /** Read at send time, so the tutor always sees the latest attempts/status. */
   exercise?: () => ExerciseContext;
+  /** Index into realCases(topic) when the chat was opened from a real-life example. */
+  realCase?: number;
 };
 
 /** Streams replies from /api/chat. Shared by the chat page and the in-exercise panel. */
-export function useTutorChat({ grade, topicId, exercise }: Context) {
+export function useTutorChat({ grade, topicId, exercise, realCase }: Context) {
   const { t, lang } = useApp();
   const [messages, setMessages] = useState<Msg[]>([]);
   const [busy, setBusy] = useState(false);
@@ -55,7 +57,7 @@ export function useTutorChat({ grade, topicId, exercise }: Context) {
         const res = await fetch("/api/chat", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ messages: history, lang, grade, topicId, exercise: exercise?.() }),
+          body: JSON.stringify({ messages: history, lang, grade, topicId, exercise: exercise?.(), realCase }),
           signal: controller.signal,
         });
         if (!res.ok || !res.body) {
@@ -79,7 +81,7 @@ export function useTutorChat({ grade, topicId, exercise }: Context) {
         }
       }
     },
-    [lang, grade, topicId, exercise, t],
+    [lang, grade, topicId, exercise, realCase, t],
   );
 
   return { messages, busy, send, reset };

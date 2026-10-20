@@ -1,5 +1,6 @@
 import type { GeneratorId } from "./exercises";
 import type { T } from "./i18n";
+import { MORE_CASES, type RealCase } from "./real-life";
 
 /**
  * Topics follow the Skola2030 basic education standard for mathematics
@@ -34,7 +35,8 @@ export type Topic = {
   icon: string;
   kind: "algebra" | "geometry" | "data";
   why: T;
-  realCase: { title: T; text: T };
+  /** The main real-life case; more in lib/real-life.ts, all of them via realCases(). */
+  realCase: RealCase;
   theory: T[];
   formula?: string;
   widget?: WidgetId;
@@ -1344,4 +1346,9 @@ export function getGrade(grade: number): Grade | undefined {
 
 export function getTopic(grade: number, topicId: string): Topic | undefined {
   return getGrade(grade)?.topics.find((t) => t.id === topicId);
+}
+
+/** Every real-life application of a topic: the main case first, then the extra ones. */
+export function realCases(topic: Topic): RealCase[] {
+  return [topic.realCase, ...(MORE_CASES[topic.id] ?? [])];
 }

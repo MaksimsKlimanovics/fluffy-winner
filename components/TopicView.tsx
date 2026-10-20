@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { getGrade, getTopic } from "@/lib/curriculum";
+import { getGrade, getTopic, realCases } from "@/lib/curriculum";
 import { gradeAttrs } from "@/lib/grade-ui";
 import { type T, UI } from "@/lib/i18n";
 import { useApp } from "./AppProvider";
+import { CaseTutor } from "./chat/CaseTutor";
 import { BottomNav, TopBar } from "./Chrome";
 import { ExerciseCard } from "./ExerciseCard";
 import { Icon } from "./Icon";
@@ -80,6 +81,10 @@ export function TopicView({ grade, topicId }: { grade: number; topicId: string }
   const nextTopic = g.topics[idx + 1];
   const helperUI = personaUI(persona(grade));
   const parts = topic.widget ? [LEARN, TRY, PRACTICE] : [LEARN, PRACTICE];
+  const cases = realCases(topic);
+  const [openCase, setOpenCase] = useState<number | null>(null);
+  const casesRef = useRef<HTMLElement>(null);
+  const casesHost = casesRef.current?.closest<HTMLElement>(".page");
 
   // Remembered for the home screen's "continue" card.
   useEffect(() => visitTopic(grade, topicId), [visitTopic, grade, topicId]);
@@ -113,10 +118,26 @@ export function TopicView({ grade, topicId }: { grade: number; topicId: string }
               </MascotSays>
             </section>
 
-            <section className="block real-case">
-              <span className="badge">{t(UI.realCase)}</span>
-              <h3>{t(topic.realCase.title)}</h3>
-              <p>{t(topic.realCase.text)}</p>
+            <section className="block" ref={casesRef}>
+              <h2>{t(UI.realLife)}</h2>
+              {cases.map((c, i) => (
+                <article key={i} className="real-case">
+                  <span className="badge">
+                    {t(UI.realCase)} {i + 1}/{cases.length}
+                  </span>
+                  <h3>{t(c.title)}</h3>
+                  <p>{t(c.text)}</p>
+                  <button
+                    type="button"
+                    className={`btn small ${openCase === i ? "tutor-on" : "ghost"}`}
+                    onClick={() => setOpenCase(i)}
+                    aria-haspopup="dialog"
+                    aria-expanded={openCase === i}
+                  >
+                    <Icon name="sparkles" size={18} /> {t(UI.learnMore)}
+                  </button>
+                </article>
+              ))}
             </section>
 
             <section className="group">
@@ -194,6 +215,19 @@ export function TopicView({ grade, topicId }: { grade: number; topicId: string }
           </section>
         )}
       </main>
+      {openCase !== null && casesHost && (
+        // Keyed by example: another example starts a fresh conversation.
+        <CaseTutor
+          key={`${topicId}/${openCase}`}
+          grade={grade}
+          topicId={topicId}
+          caseIndex={openCase}
+          realCase={cases[openCase]}
+          color={g.color}
+          host={casesHost}
+          onClose={() => setOpenCase(null)}
+        />
+      )}
       <BottomNav />
     </div>
   );

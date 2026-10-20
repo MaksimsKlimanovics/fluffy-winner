@@ -1,8 +1,8 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
-import { GRADES } from "../lib/curriculum";
-import { type Exercise, generateExercise } from "../lib/exercises";
+import { GRADES, realCases } from "../lib/curriculum";
+import { type Exercise, generateExercise, problemSet } from "../lib/exercises";
 import { BIG_IDEAS, OUTCOMES, outcome, stageOf } from "../lib/skola2030";
 
 const norm = (s: string) => s.replace(/\s+/g, " ").trim();
@@ -57,7 +57,8 @@ const numbersIn = (s: string) => (s.match(/\d+(?:,\d+)?/g) ?? []).map((n) => Num
 test("exercises stay within the number ranges of their stage", () => {
   for (const g of GRADES) {
     for (const t of g.topics) {
-      for (let seed = 0; seed < 300; seed++) {
+      // Random seeds plus every problem of the topic's numbered set.
+      for (const seed of [...Array(300).keys(), ...problemSet(t.generator)]) {
         const ex = generateExercise(t.generator, seed);
         if (g.grade === 1) {
           // Grade 1 topics promise numbers up to 20 (3:3.2.2 "20 apjomā").
@@ -77,7 +78,7 @@ test("exercises stay within the number ranges of their stage", () => {
 test("π and circle area appear only from grade 7 (stage 9 outcome 6.4.1)", () => {
   for (const g of GRADES.filter((x) => x.grade <= 6)) {
     for (const t of g.topics) {
-      const content = [t.title, t.why, t.realCase.title, t.realCase.text, ...t.theory, ...t.askAi]
+      const content = [t.title, t.why, ...realCases(t).flatMap((c) => [c.title, c.text]), ...t.theory, ...t.askAi]
         .flatMap((x) => [x.lv, x.ru])
         .concat(t.formula ?? "");
       for (const c of content) assert.doesNotMatch(c, /π|πr/, `${t.id}: mentions π`);
