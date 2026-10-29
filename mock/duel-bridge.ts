@@ -1,6 +1,5 @@
 import {
   type DuelError as DuelErrorType,
-  type DuelMeta,
   DuelError,
   answerDuel,
   createDuel,
@@ -8,9 +7,9 @@ import {
   getTrophy,
   joinDuel,
 } from "@/lib/duel";
-import { MemoryStore } from "@/lib/duel-store";
-import { formatAnswer, generateExercise } from "@/lib/exercises";
 import { setFileSaver } from "@/components/duel/save";
+import { handleGroups } from "./group-bridge";
+import { runBot, store } from "./sim";
 import { TROPHY_SCHEMA, type TrophySpec, classicSpec, normalizeSpec, trophyPrompt } from "@/lib/trophy";
 
 /**
@@ -21,7 +20,6 @@ import { TROPHY_SCHEMA, type TrophySpec, classicSpec, normalizeSpec, trophyPromp
  * through the artifact's `sample` capability, with the built-in design as fallback.
  */
 
-const store = new MemoryStore();
 
 type SampleFn = ((input: string, options?: { modelTier?: "quick" | "default" | "complex"; cache?: boolean }) => Promise<{ text: string }>) | null;
 const samplePromise: Promise<SampleFn> = (() => {
@@ -32,26 +30,6 @@ const samplePromise: Promise<SampleFn> = (() => {
 
 const BOT_NAMES = ["Demo draugs", "Pūcīte (demo)", "Zibens (demo)"];
 
-/** The demo friend answers every few seconds and is right about two times out of three. */
-function runBot(code: string, token: string) {
-  const step = async () => {
-    try {
-      const view = await getDuel(store, code, token);
-      if (view.status === "finished") return;
-      if (view.status === "playing" && view.question) {
-        const meta = (await store.get<DuelMeta>(`duel:${code}`))!;
-        const task = meta.tasks[view.question.index];
-        const ex = generateExercise(task.g, task.s);
-        const answer = Math.random() < 0.65 ? formatAnswer(ex) : ex.kind === "choice" ? ex.choices.find((c) => c !== ex.answer) ?? "?" : "0";
-        await answerDuel(store, { code, token, index: view.question.index, answer });
-      }
-    } catch {
-      /* the bell rang mid-answer */
-    }
-    setTimeout(step, 2500 + Math.random() * 3500);
-  };
-  setTimeout(step, 1500);
-}
 
 async function design(facts: Parameters<typeof trophyPrompt>[0]): Promise<TrophySpec> {
   const fallback = classicSpec(facts.code, facts.grade);
@@ -134,6 +112,7 @@ export function installDuelBridge() {
     const href = typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
     const url = new URL(href, "https://mock.local");
     if (url.pathname.startsWith("/api/duel")) return handle(url, init);
+    if (url.pathname.startsWith("/api/groups")) return handleGroups(url, init);
     return nextFetch(input, init);
   };
 }

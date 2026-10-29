@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Nunito } from "next/font/google";
 import { AppProvider } from "@/components/AppProvider";
+import { GroupProvider } from "@/components/group/GroupProvider";
 import "./globals.css";
 
 // Nunito is the fallback for SF Pro Rounded (ui-rounded), which Apple devices use natively.
@@ -31,7 +32,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="lv">
       <body className={nunito.variable}>
-        <AppProvider>{children}</AppProvider>
+        <AppProvider>
+          <GroupProvider>{children}</GroupProvider>
+        </AppProvider>
       </body>
     </html>
   );

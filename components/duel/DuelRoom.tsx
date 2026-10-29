@@ -76,7 +76,24 @@ export function DuelRoom({ code }: { code: string }) {
   const offset = useRef(0);
   const feedbackUntil = useRef(0);
 
-  useEffect(() => setToken(loadToken(code)), [code]);
+  // Set when this match was sent to a friend from the group list.
+  const [invitee, setInvitee] = useState<string | null>(null);
+  // An unanswered group invitation expires after 90 s.
+  const [noAnswer, setNoAnswer] = useState(false);
+  useEffect(() => {
+    if (!invitee) return;
+    const id = setTimeout(() => setNoAnswer(true), 95_000);
+    return () => clearTimeout(id);
+  }, [invitee]);
+
+  useEffect(() => {
+    setToken(loadToken(code));
+    try {
+      setInvitee(sessionStorage.getItem(`ciparini.duel.${code}.invitee`));
+    } catch {
+      /* ignore */
+    }
+  }, [code]);
 
   const apply = useCallback((v: DuelView) => {
     offset.current = v.serverNow - Date.now();
@@ -97,7 +114,7 @@ export function DuelRoom({ code }: { code: string }) {
         if (stop) return;
         apply(v);
         setError(null);
-        if (v.status === "finished") return;
+        if (v.status === "finished" || v.declined) return;
       } catch (e) {
         if (stop) return;
         setError(errorText(e));
@@ -182,7 +199,33 @@ export function DuelRoom({ code }: { code: string }) {
 
   return (
     <Shell title={t(L.title)} color={color}>
-      {view.status === "waiting" && (
+      {view.status === "waiting" && (view.declined || (invitee && noAnswer)) && (
+        <div className="duel-card center">
+          <Mascot size={80} grade={view.grade} color={color} mood="thinking" />
+          <h1>
+            {view.declined
+              ? t({ lv: `${invitee ?? "Draugs"} šoreiz atteica`, ru: `${invitee ?? "Друг"} на этот раз отказался` })
+              : t({ lv: `${invitee} neatbildēja`, ru: `${invitee} не ответил(а)` })}
+          </h1>
+          <p>{t({ lv: "Pamēģini vēlāk vai izaicini kādu citu.", ru: "Попробуй позже или вызови кого-то другого." })}</p>
+          <Link className="btn primary" href="/sacensibas">
+            {t({ lv: "Atpakaļ uz grupu", ru: "Назад к группе" })}
+          </Link>
+        </div>
+      )}
+
+      {view.status === "waiting" && !view.declined && invitee && !noAnswer && (
+        <div className="duel-card center">
+          <p className="eyebrow">{meta}</p>
+          <h1>{t({ lv: `Izaicinājums nosūtīts: ${invitee}`, ru: `Вызов отправлен: ${invitee}` })}</h1>
+          <div className="duel-wait">
+            <Mascot size={64} grade={view.grade} color={color} mood="thinking" />
+            <span>{t({ lv: "Gaidām atbildi…", ru: "Ждём ответа…" })}</span>
+          </div>
+        </div>
+      )}
+
+      {view.status === "waiting" && !view.declined && !invitee && (
         <div className="duel-card center">
           <p className="eyebrow">{meta}</p>
           <h1>{t(L.tellCode)}</h1>

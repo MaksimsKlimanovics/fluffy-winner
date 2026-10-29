@@ -55,6 +55,11 @@ export interface DuelStore {
   get<V>(key: string): Promise<V | null>;
   /** Returns false when `nx` is set and the key already exists. */
   set(key: string, value: unknown, opts: { ex: number; nx?: boolean }): Promise<boolean>;
+  del(key: string): Promise<void>;
+  /** One field of a hash; the whole hash expires `ex` seconds after the last write. */
+  hset(key: string, field: string, value: unknown, opts: { ex: number }): Promise<void>;
+  hgetall<V>(key: string): Promise<Record<string, V>>;
+  hdel(key: string, field: string): Promise<void>;
 }
 
 export class DuelError extends Error {
@@ -71,6 +76,7 @@ const keys = {
   host: (code: string) => `duel:${code}:p0`,
   guest: (code: string) => `duel:${code}:p1`,
   trophy: (code: string) => `duel:${code}:trophy`,
+  declined: (code: string) => `duel:${code}:declined`,
 };
 
 // --- input hygiene ----------------------------------------------------------
@@ -152,6 +158,8 @@ export type DuelView = {
   me: { name: string; score: number; answered: number; correct: number };
   opponent?: { name: string; score: number; answered: number; correct: number };
   question?: PublicQuestion;
+  /** The friend invited from a group said no; the match will never start. */
+  declined?: boolean;
   result?: { outcome: "win" | "lose" | "draw" };
 };
 
@@ -197,16 +205,17 @@ export function winnerSeat(host: Player, guest: Player): 0 | 1 | null {
 
 // --- operations ----------------------------------------------------------------
 
-type Loaded = { meta: DuelMeta; host: Player; guest: Guest | null };
+type Loaded = { meta: DuelMeta; host: Player; guest: Guest | null; declined: boolean };
 
 async function load(store: DuelStore, code: string): Promise<Loaded> {
-  const [meta, host, guest] = await Promise.all([
+  const [meta, host, guest, declined] = await Promise.all([
     store.get<DuelMeta>(keys.meta(code)),
     store.get<Player>(keys.host(code)),
     store.get<Guest>(keys.guest(code)),
+    store.get<boolean>(keys.declined(code)),
   ]);
   if (!meta || !host) throw new DuelError("not_found", 404);
-  return { meta, host, guest };
+  return { meta, host, guest, declined: declined === true };
 }
 
 function seatOf(l: Loaded, token: unknown): 0 | 1 {
@@ -235,6 +244,7 @@ function view(l: Loaded, seat: 0 | 1, now: number): DuelView {
     v.endAt = l.guest.startAt + l.meta.duration * 1000;
   }
   if (status === "playing") v.question = publicQuestion(l.meta, me.answers.length);
+  if (status === "waiting" && l.declined) v.declined = true;
   if (status === "finished" && l.guest) {
     const w = winnerSeat(l.host, l.guest);
     v.result = { outcome: w === null ? "draw" : w === seat ? "win" : "lose" };
@@ -374,4 +384,9 @@ export async function getTrophy<S>(
   const made = await design(facts);
   await store.set(key, made, { ex: TTL_SEC, nx: true });
   return { spec: (await store.get<S>(key)) ?? made, winnerName, facts };
+}
+
+/** An invited friend turned the match down. */
+export async function declineDuel(store: DuelStore, code: string): Promise<void> {
+  await store.set(keys.declined(code), true, { ex: TTL_SEC });
 }

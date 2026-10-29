@@ -71,6 +71,20 @@ Divi bērni no dažādām ierīcēm risina vienus un tos pašus izvēlētās kla
 
 Как устроено: `lib/duel.ts` — судья (сервер хранит ключи ответов, часы и решает, кто победил; браузер получает вопрос без ответа). У каждого игрока своя запись в Redis, поэтому одновременные ответы не перезаписывают друг друга; второе место занимается атомарно (`SET NX`). Браузер опрашивает состояние раз в 1,5 с — WebSocket на Vercel не нужен. Данные матча (только ники и ответы) удаляются через 2 часа. Секрет игрока хранится в `localStorage` и передаётся в заголовке `x-duel-token`.
 
+### Grupas: kurš ir šeit tagad / Группы: кто сейчас здесь
+
+Vecāks vai skolotājs sadaļā **Sacensības → „Esi vecāks vai skolotājs? Izveido grupu“** izveido grupu un saņem **6 zīmju grupas kodu** (piem., `L84N4P`). Bērni ievada kodu, segvārdu un klasi un redz, kurš no grupas **šobrīd** ir lietotnē un ko dara („Mācās: Daļu saskaitīšana“, „Sarunājas ar palīgu“, „Sacensībās“). Uzspiežot uz bērna, var izvēlēties klasi un laiku un nosūtīt izaicinājumu. Draugam jebkurā ekrānā parādās „Anna tevi izaicina! [Ne tagad] [Pieņemt]“.
+
+Drošība bērniem:
+- redz un izaicināt var **tikai savas grupas** dalībniekus, svešie nevienu neredz;
+- slēdzis „Var mani izaicināt“ — bērns var kļūt neaizsniedzams;
+- nav brīva teksta: aktivitāte tiek sūtīta kā id (klase/tēma) un teksts veidots no mūsu satura; nav čata starp bērniem;
+- izaicinājums ir tikai uzaicinājums — bez piekrišanas spēle nesākas; max 4 izaicinājumi minūtē;
+- grupas veidotājs redz visus dalībniekus (tiešsaistē vai nē) un var **izņemt** jebkuru;
+- dati: segvārds un klase; grupa tiek dzēsta pēc 90 dienām bez lietošanas.
+
+Как устроено: `lib/groups.ts`. Присутствие — heartbeat раз в 10 с, пока вкладка видима; кто молчит 30 с — офлайн. Данные в Redis-хешах (`HSET`/`HGETALL`), у каждого ребёнка своё поле, поэтому одновременные запросы не мешают друг другу. Расход Upstash: ~6 команд на heartbeat, т. е. ≈ 36 команд в минуту на ребёнка (урок 45 мин с 25 детьми ≈ 40 000 команд). Для класса, который пользуется регулярно, бесплатного плана может не хватить — проверьте лимиты Upstash.
+
 ## Стек
 
 - **Next.js 16** (App Router) + React 19 + TypeScript — все страницы тем статически генерируются

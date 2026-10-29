@@ -36,10 +36,32 @@ class UpstashStore implements DuelStore {
     if (opts.nx) args.push("NX");
     return (await this.command<string | null>(args)) === "OK";
   }
+
+  async del(key: string): Promise<void> {
+    await this.command(["DEL", key]);
+  }
+
+  async hset(key: string, field: string, value: unknown, opts: { ex: number }): Promise<void> {
+    await this.command(["HSET", key, field, JSON.stringify(value)]);
+    await this.command(["EXPIRE", key, opts.ex]);
+  }
+
+  async hgetall<V>(key: string): Promise<Record<string, V>> {
+    // Upstash returns HGETALL as a flat [field, value, field, value, …] list.
+    const flat = (await this.command<string[] | null>(["HGETALL", key])) ?? [];
+    const out: Record<string, V> = {};
+    for (let i = 0; i + 1 < flat.length; i += 2) out[flat[i]] = JSON.parse(flat[i + 1]) as V;
+    return out;
+  }
+
+  async hdel(key: string, field: string): Promise<void> {
+    await this.command(["HDEL", key, field]);
+  }
 }
 
 export class MemoryStore implements DuelStore {
   private data = new Map<string, { value: string; expires: number }>();
+  private hashes = new Map<string, { fields: Map<string, string>; expires: number }>();
 
   async get<V>(key: string): Promise<V | null> {
     const hit = this.data.get(key);
@@ -55,6 +77,37 @@ export class MemoryStore implements DuelStore {
     if (opts.nx && (await this.get(key)) !== null) return false;
     this.data.set(key, { value: JSON.stringify(value), expires: Date.now() + opts.ex * 1000 });
     return true;
+  }
+
+  async del(key: string): Promise<void> {
+    this.data.delete(key);
+    this.hashes.delete(key);
+  }
+
+  private hash(key: string) {
+    const h = this.hashes.get(key);
+    if (h && h.expires < Date.now()) {
+      this.hashes.delete(key);
+      return undefined;
+    }
+    return h;
+  }
+
+  async hset(key: string, field: string, value: unknown, opts: { ex: number }): Promise<void> {
+    const h = this.hash(key) ?? { fields: new Map<string, string>(), expires: 0 };
+    h.fields.set(field, JSON.stringify(value));
+    h.expires = Date.now() + opts.ex * 1000;
+    this.hashes.set(key, h);
+  }
+
+  async hgetall<V>(key: string): Promise<Record<string, V>> {
+    const out: Record<string, V> = {};
+    for (const [f, v] of this.hash(key)?.fields ?? []) out[f] = JSON.parse(v) as V;
+    return out;
+  }
+
+  async hdel(key: string, field: string): Promise<void> {
+    this.hash(key)?.fields.delete(field);
   }
 }
 

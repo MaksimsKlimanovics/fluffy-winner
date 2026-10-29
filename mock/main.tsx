@@ -1,6 +1,7 @@
 import { createRoot } from "react-dom/client";
 import NotFound from "@/app/not-found";
 import { AppProvider } from "@/components/AppProvider";
+import { GroupProvider } from "@/components/group/GroupProvider";
 import { ChatView } from "@/components/ChatView";
 import { GradeView } from "@/components/GradeView";
 import { HomeView } from "@/components/HomeView";
@@ -49,7 +50,7 @@ createRoot(document.getElementById("app")!).render(
     <RouterProvider onNavigate={onNavigate}>
       {(location, navigate) => {
         navigateTo = navigate;
-        return route(location);
+        return <GroupProvider>{route(location)}</GroupProvider>;
       }}
     </RouterProvider>
   </AppProvider>,

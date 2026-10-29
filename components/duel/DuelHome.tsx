@@ -10,6 +10,7 @@ import { useApp } from "../AppProvider";
 import { BottomNav, TopBar } from "../Chrome";
 import { Icon } from "../Icon";
 import { Mascot } from "../Mascot";
+import { GroupPanel } from "../group/GroupPanel";
 import { duelApi, errorText, loadNick, saveNick, saveToken } from "./api";
 
 const L = {
@@ -85,6 +86,10 @@ export function DuelHome() {
           </div>
           <Mascot size={76} grade={grade} mood="cheer" />
         </header>
+
+        <GroupPanel />
+
+        <h2 className="duel-or">{t({ lv: "Vai izaicini ar kodu", ru: "Или вызови по коду" })}</h2>
 
         <div className="segmented wide" role="group" aria-label={t(L.title)}>
           <button type="button" aria-pressed={mode === "create"} onClick={() => setMode("create")}>
