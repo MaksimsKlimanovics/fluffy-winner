@@ -1142,7 +1142,74 @@ a.row:active {
 
 .real-case .btn {
   align-self: flex-start;
-  margin-top: 4px;
+  margin-top: auto;
+}
+
+/* Swipeable cards: native scroll + snap, the next card peeks in. */
+.carousel {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  /* bleed to the screen edges so a card can slide out of view */
+  margin-inline: calc(-1 * var(--gutter));
+}
+.carousel-track {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: var(--gutter);
+  padding: 2px var(--gutter) 4px;
+  scrollbar-width: none;
+  outline: none;
+}
+.carousel-track::-webkit-scrollbar {
+  display: none;
+}
+.carousel-track:focus-visible {
+  outline: 2px solid var(--tint);
+  outline-offset: -2px;
+  border-radius: var(--radius-card);
+}
+.carousel-slide {
+  flex: 0 0 86%;
+  display: flex;
+  scroll-snap-align: start;
+}
+.carousel-slide > * {
+  flex: 1;
+  min-width: 0;
+}
+.carousel-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+.carousel-arrow {
+  display: none;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--fill);
+  color: var(--label);
+  transition:
+    opacity 200ms ease,
+    transform var(--press) var(--ease-out);
+}
+.carousel-arrow:disabled {
+  opacity: 0.3;
+}
+.carousel-arrow:active:not(:disabled) {
+  transform: scale(0.97);
+}
+@media (hover: hover) and (pointer: fine) {
+  .carousel-arrow {
+    display: grid;
+  }
 }
 
 .real-case h3 {

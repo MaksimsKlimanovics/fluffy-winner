@@ -6,6 +6,7 @@ import { getGrade, getTopic, realCases } from "@/lib/curriculum";
 import { gradeAttrs } from "@/lib/grade-ui";
 import { type T, UI } from "@/lib/i18n";
 import { useApp } from "./AppProvider";
+import { Carousel } from "./Carousel";
 import { CaseTutor } from "./chat/CaseTutor";
 import { BottomNav, TopBar } from "./Chrome";
 import { ExerciseCard } from "./ExerciseCard";
@@ -120,24 +121,31 @@ export function TopicView({ grade, topicId }: { grade: number; topicId: string }
 
             <section className="block" ref={casesRef}>
               <h2>{t(UI.realLife)}</h2>
-              {cases.map((c, i) => (
-                <article key={i} className="real-case">
-                  <span className="badge">
-                    {t(UI.realCase)} {i + 1}/{cases.length}
-                  </span>
-                  <h3>{t(c.title)}</h3>
-                  <p>{t(c.text)}</p>
-                  <button
-                    type="button"
-                    className={`btn small ${openCase === i ? "tutor-on" : "ghost"}`}
-                    onClick={() => setOpenCase(i)}
-                    aria-haspopup="dialog"
-                    aria-expanded={openCase === i}
-                  >
-                    <Icon name="sparkles" size={18} /> {t(UI.learnMore)}
-                  </button>
-                </article>
-              ))}
+              <Carousel
+                label={t(UI.realLife)}
+                slideLabel={(i, n) => `${t(UI.realCase)} ${i}/${n}`}
+                prevLabel={t(UI.back)}
+                nextLabel={t(UI.next)}
+              >
+                {cases.map((c, i) => (
+                  <article key={i} className="real-case">
+                    <span className="badge">
+                      {t(UI.realCase)} {i + 1}/{cases.length}
+                    </span>
+                    <h3>{t(c.title)}</h3>
+                    <p>{t(c.text)}</p>
+                    <button
+                      type="button"
+                      className={`btn small ${openCase === i ? "tutor-on" : "ghost"}`}
+                      onClick={() => setOpenCase(i)}
+                      aria-haspopup="dialog"
+                      aria-expanded={openCase === i}
+                    >
+                      <Icon name="sparkles" size={18} /> {t(UI.learnMore)}
+                    </button>
+                  </article>
+                ))}
+              </Carousel>
             </section>
 
             <section className="group">
